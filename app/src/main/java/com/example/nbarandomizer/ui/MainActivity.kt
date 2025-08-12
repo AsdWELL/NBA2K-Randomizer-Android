@@ -19,6 +19,7 @@ import com.example.nbarandomizer.extensions.show
 import com.example.nbarandomizer.models.Epoch
 import com.example.nbarandomizer.models.Version2K
 import com.example.nbarandomizer.services.PlayersService
+import com.example.nbarandomizer.ui.search.SearchFragment
 import com.example.nbarandomizer.viewModels.SharedViewModel
 import com.example.nbarandomizer.viewModels.UiState
 import com.google.android.material.tabs.TabLayoutMediator
@@ -59,6 +60,8 @@ class MainActivity : AppCompatActivity() {
 
         binding.refreshBtn.setOnClickListener { downloadRoster() }
 
+        setSearchListener()
+
         playersService.notifyProgressBar = { binding.progressBar.progress++ }
 
         loadRosterAndDetailsIntoCache()
@@ -71,6 +74,16 @@ class MainActivity : AppCompatActivity() {
 
         if (sharedViewModel.uiState.value is UiState.Idle)
             getRoster()
+    }
+
+    private fun setSearchListener() {
+        binding.searchBar.setOnClickListener {
+            supportFragmentManager
+                .beginTransaction()
+                .add(R.id.container, SearchFragment(), "search")
+                .addToBackStack("search")
+                .commit()
+        }
     }
 
     private fun tryLoadResourceFileIntoCache(fileName: String, resourceName: String) {

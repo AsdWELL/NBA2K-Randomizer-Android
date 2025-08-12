@@ -70,7 +70,7 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
         binding.recyclerView.adapter = adapter
 
-        binding.searchButton.setOnClickListener {
+        binding.filterButton.setOnClickListener {
             if (sharedViewModel.isDownloadingRoster()) {
                 toastMessage("Погоди ща скачается")
 

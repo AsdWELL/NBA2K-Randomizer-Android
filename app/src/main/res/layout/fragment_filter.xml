@@ -24,8 +24,8 @@
             android:paddingHorizontal="35dp">
 
             <TextView
-                android:id="@+id/search_label"
-                android:text="Поиск"
+                android:id="@+id/filter_label"
+                android:text="@string/filter_label"
                 android:textSize="20sp"
                 android:textStyle="bold|italic"
                 android:layout_gravity="center"

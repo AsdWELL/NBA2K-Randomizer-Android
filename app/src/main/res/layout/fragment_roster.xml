@@ -35,13 +35,13 @@
         android:layout_height="match_parent"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/searchButton"
+        android:id="@+id/filter_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="20dp"
         app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
-        android:src="@drawable/search_24px"
+        android:src="@drawable/filter_list_24px"
         app:maxImageSize="30dp"
         android:transitionName="filter_transition"
         android:layout_gravity="bottom|end"/>

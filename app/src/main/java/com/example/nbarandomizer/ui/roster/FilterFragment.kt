@@ -141,7 +141,7 @@ class FilterFragment : Fragment() {
             startPostponedEnterTransition()
         }
 
-        val searchButton = requireActivity().findViewById<View>(R.id.searchButton)
+        val searchButton = requireActivity().findViewById<View>(R.id.filter_button)
 
         enterTransition = createEnterTransformation(searchButton, binding.filterContainer) {
             searchButton.hide()

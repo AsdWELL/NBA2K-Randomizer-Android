@@ -22,4 +22,5 @@
     <string name="remaining_players_label">Осталось</string>
     <string name="games_count_label">Сыграно матчей</string>
     <string name="empty_history_msg">Нихуя пока тут нет</string>
+    <string name="filter_label">Фильтры</string>
 </resources>

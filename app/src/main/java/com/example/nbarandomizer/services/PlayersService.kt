@@ -10,13 +10,19 @@ import com.example.nbarandomizer.models.Epoch
 import com.example.nbarandomizer.models.Player
 import com.example.nbarandomizer.models.PlayerDetails
 import com.example.nbarandomizer.models.Rating
+import com.example.nbarandomizer.models.SearchPlayerResult
+import com.example.nbarandomizer.models.SearchPlayerResultDto
 import com.example.nbarandomizer.models.Version2K
 import com.fleeksoft.ksoup.Ksoup
 import com.fleeksoft.ksoup.nodes.Element
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.Parameters
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -35,14 +41,14 @@ class PlayersService(
 ) : Closeable {
     private val _latestVersion = Version2K.latest()
 
-    private val _baseUrl = "https://www.2kratings.com/lists/top-100-"
+    private val _baseUrl = "https://www.2kratings.com"
 
     private val _client = HttpClient(CIO)
 
     var notifyProgressBar: (() -> Unit)? = null
 
     private fun getSuffixUrl(epoch: Epoch): String {
-        return when(epoch) {
+        return "/lists/top-100-" + when(epoch) {
             Epoch.Current -> "highest-nba-2k-ratings"
             Epoch.AllTime -> "all-time-players"
         }
@@ -328,6 +334,66 @@ class PlayersService(
         }
 
         return details
+    }
+
+    private fun buildSearchFormData(name: String): FormDataContent {
+        return FormDataContent(Parameters.build  {
+            append("action", "ajaxsearchpro_search")
+            append("aspp", name)
+            append("asid", "1")
+        })
+    }
+
+    private fun extractSpanContent(content: String): String {
+        val textRegex = ">([^<]+)</span>".toRegex()
+        val match = textRegex.find(content) ?: return ""
+
+        val fullText = match.groupValues[1]
+
+        return fullText.trim()
+    }
+
+    private fun convertSearchResultDto(dto: SearchPlayerResultDto): SearchPlayerResult? {
+        val title = extractSpanContent(dto.title)
+
+        if (title.isEmpty())
+            return null
+
+        return SearchPlayerResult(
+            name = dto.name,
+            team = extractSpanContent(dto.content),
+            url = dto.url,
+            photoUrl = dto.image.replace("-80x80", "")
+        )
+    }
+
+    suspend fun searchPlayers(name: String): List<SearchPlayerResult> {
+        if (name.length < 2)
+            return emptyList()
+
+        val content = _client.post("$_baseUrl/wp-admin/admin-ajax.php") {
+            setBody(buildSearchFormData(name))
+        }.bodyAsText()
+
+        val trimmedContent = content.substring(
+            content.indexOf("["),
+            content.indexOf("]") + 1
+        ).trim()
+
+        val searchResultDto = Json {
+            ignoreUnknownKeys = true
+        }.decodeFromString<List<SearchPlayerResultDto>>(trimmedContent)
+
+        val searchResults = mutableListOf<SearchPlayerResult>()
+
+        searchResultDto.forEach {
+            val searchPlayerResult = convertSearchResultDto(it)
+
+            if (searchPlayerResult != null)
+                searchResults.add(searchPlayerResult)
+        }
+
+        return searchResults
     }
 
     override fun close() = _client.close()
