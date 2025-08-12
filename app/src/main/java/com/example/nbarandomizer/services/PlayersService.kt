@@ -1,5 +1,7 @@
 package com.example.nbarandomizer.services
 
+import android.content.Context
+import androidx.core.content.ContextCompat
 import com.example.nbarandomizer.R
 import com.example.nbarandomizer.exceptions.LostConnectionException
 import com.example.nbarandomizer.exceptions.PlayerDetailsFileNotFoundException
@@ -35,10 +37,7 @@ import java.io.File
 import java.io.FileOutputStream
 import kotlin.math.roundToInt
 
-class PlayersService(
-    private val cacheDir: File,
-    private val getColor: (colorId: Int) -> Int
-) : Closeable {
+class PlayersService(private val context: Context) : Closeable {
     private val _latestVersion = Version2K.latest()
 
     private val _baseUrl = "https://www.2kratings.com"
@@ -69,6 +68,10 @@ class PlayersService(
         val inches = buffer[0] * 12 + buffer[1]
 
         return (inches * 2.54).roundToInt()
+    }
+
+    private fun getColor(colorId: Int): Int {
+        return ContextCompat.getColor(context, colorId)
     }
 
     private fun getOvrColor(ovr: Int): Int {
@@ -193,7 +196,7 @@ class PlayersService(
         return withContext(Dispatchers.IO) {
             val fileName = getRosterFileName(epoch, version)
 
-            val file = File(cacheDir, fileName)
+            val file = File(context.filesDir, fileName)
 
             if (file.exists())
                 Json.decodeFromString<MutableList<Player>>(file.readText())
@@ -206,7 +209,7 @@ class PlayersService(
         withContext(Dispatchers.IO) {
             val fileName = getRosterFileName(epoch, version)
 
-            val file = File(cacheDir, fileName)
+            val file = File(context.filesDir, fileName)
 
             FileOutputStream(file, false).use {
                 it.write(Json.encodeToString(players).toByteArray())
@@ -287,7 +290,7 @@ class PlayersService(
     private suspend fun getPlayersDetailsFromCacheByEpochAnd2KVersion(epoch: Epoch, version: Version2K): MutableList<PlayerDetails> {
         val fileName = getDetailsFileName(epoch, version)
 
-        val file = File(cacheDir, fileName)
+        val file = File(context.filesDir, fileName)
 
         return if (file.exists())
             withContext(Dispatchers.IO) {
@@ -299,7 +302,7 @@ class PlayersService(
 
     suspend fun cachePlayerDetails(playerDetails: List<PlayerDetails>, epoch: Epoch, version: Version2K) {
         withContext(Dispatchers.IO) {
-            val file = File(cacheDir, getDetailsFileName(epoch, version))
+            val file = File(context.filesDir, getDetailsFileName(epoch, version))
 
             FileOutputStream(file, false).use {
                 it.write(Json.encodeToString(playerDetails).toByteArray())

@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun tryLoadResourceFileIntoCache(fileName: String, resourceName: String) {
-        val file = File(applicationContext.cacheDir, fileName)
+        val file = File(applicationContext.filesDir, fileName)
 
         if (!file.exists()) {
             val resourceId = applicationContext.resources.getIdentifier(

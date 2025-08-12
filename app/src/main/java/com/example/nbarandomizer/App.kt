@@ -10,7 +10,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        playersService = PlayersService(this.cacheDir) { ContextCompat.getColor(this, it) }
+        playersService = PlayersService(applicationContext)
     }
 
     override fun onTerminate() {
