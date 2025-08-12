@@ -63,7 +63,7 @@ class TeamViewHolder(private val binding: PlayerCardBinding) : RecyclerView.View
             }
 
             itemView.setOnLongClickListener {
-                playerCardListener.onPlayerCardLongClick(player, it)
+                playerCardListener.showPlayerDetails(player, it)
                 true
             }
         }

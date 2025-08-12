@@ -25,7 +25,6 @@ data class Player(
     val dunkRating: Rating,
     val height: Int,
     val position: String,
-    val epoch: Epoch,
     val url: String,
     val photoUrl: String
 )

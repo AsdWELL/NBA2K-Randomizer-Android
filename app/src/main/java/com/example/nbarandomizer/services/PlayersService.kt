@@ -122,7 +122,6 @@ class PlayersService(private val context: Context) : Closeable {
                     dunkRating = Rating(dunkRating, getStatColor(dunkRating)),
                     height = inchesToCm(playerInfo[1]),
                     position = playerInfo[0].replace(" /", ",").trim(),
-                    epoch = epoch,
                     url = urls[it],
                     photoUrl = photosUrl[it],
                 )
@@ -357,15 +356,19 @@ class PlayersService(private val context: Context) : Closeable {
     }
 
     private fun convertSearchResultDto(dto: SearchPlayerResultDto): SearchPlayerResult? {
-        val title = extractSpanContent(dto.title)
+        val overallValue = extractSpanContent(dto.title)
 
-        if (title.isEmpty())
+        if (overallValue.isEmpty())
             return null
 
         return SearchPlayerResult(
             name = dto.name,
             team = extractSpanContent(dto.content),
             url = dto.url,
+            overall = Rating(
+                value = overallValue.toInt(),
+                color = getOvrColor(overallValue.toInt())
+            ),
             photoUrl = dto.image.replace("-80x80", "")
         )
     }

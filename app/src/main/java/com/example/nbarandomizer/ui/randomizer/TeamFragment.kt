@@ -47,7 +47,7 @@ class TeamFragment(
         adapter.submitList(newData)
     }
 
-    override fun onPlayerCardLongClick(player: Player, playerCard: View) {
+    override fun showPlayerDetails(player: Player, playerCard: View) {
         if (sharedViewModel.isDownloadingDetails()) {
             toastMessage("Погоди ща скачается")
             return

@@ -35,7 +35,7 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
     }
 
-    override fun onPlayerCardLongClick(player: Player, playerCard: View) {
+    override fun showPlayerDetails(player: Player, playerCard: View) {
         if (sharedViewModel.isDownloadingDetails()) {
             toastMessage("Погоди ща скачается")
             return
