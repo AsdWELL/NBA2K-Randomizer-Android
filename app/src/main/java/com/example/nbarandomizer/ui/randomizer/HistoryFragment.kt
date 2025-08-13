@@ -22,6 +22,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class HistoryFragment : Fragment() {
+    companion object {
+        const val TAG = "history"
+    }
+
     private var _binding: FragmentHistoryBinding? = null
 
     private val binding get() = _binding!!

@@ -50,8 +50,8 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
 
         requireActivity().supportFragmentManager
             .beginTransaction()
-            .add(R.id.container, playerDetailsFragment, "details")
-            .addToBackStack("details")
+            .add(R.id.container, playerDetailsFragment, PlayerDetailsFragment.TAG)
+            .addToBackStack(PlayerDetailsFragment.TAG)
             .commit()
     }
 
@@ -79,8 +79,8 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
 
             requireActivity().supportFragmentManager
                .beginTransaction()
-               .add(R.id.container, FilterFragment(), "filter")
-               .addToBackStack("filter")
+               .add(R.id.container, FilterFragment(), FilterFragment.TAG)
+               .addToBackStack(FilterFragment.TAG)
                .commit()
         }
 

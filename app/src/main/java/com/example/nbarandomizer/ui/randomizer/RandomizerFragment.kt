@@ -194,8 +194,8 @@ class RandomizerFragment : Fragment() {
 
         requireActivity().supportFragmentManager
             .beginTransaction()
-            .add(R.id.container, teamFragment, "team")
-            .addToBackStack("team")
+            .add(R.id.container, teamFragment, TeamFragment.TAG)
+            .addToBackStack(TeamFragment.TAG)
             .commit()
 
         shuffledPlayers.value = players
@@ -213,8 +213,8 @@ class RandomizerFragment : Fragment() {
 
         requireActivity().supportFragmentManager
             .beginTransaction()
-            .add(R.id.container, historyFragment, "history")
-            .addToBackStack("history")
+            .add(R.id.container, historyFragment, HistoryFragment.TAG)
+            .addToBackStack(HistoryFragment.TAG)
             .commit()
     }
 

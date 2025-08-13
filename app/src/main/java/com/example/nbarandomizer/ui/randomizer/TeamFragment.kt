@@ -28,6 +28,10 @@ class TeamFragment(
     private val teamsCount: Int,
     private val randomizeNewPlayer: (position: Int) -> Player
 ) : Fragment(), IPlayerCardListener {
+    companion object {
+        const val TAG = "team"
+    }
+
     private var _binding: FragmentTeamBinding? = null
 
     private val binding get() = _binding!!
@@ -72,8 +76,8 @@ class TeamFragment(
 
         requireActivity().supportFragmentManager
             .beginTransaction()
-            .add(R.id.container, playerDetailsFragment, "details")
-            .addToBackStack("details")
+            .add(R.id.container, playerDetailsFragment, PlayerDetailsFragment.TAG)
+            .addToBackStack(PlayerDetailsFragment.TAG)
             .commit()
     }
 

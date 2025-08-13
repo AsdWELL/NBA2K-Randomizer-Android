@@ -22,6 +22,10 @@ import com.example.nbarandomizer.models.SortingAttrs
 import com.example.nbarandomizer.viewModels.SharedViewModel
 
 class FilterFragment : Fragment() {
+    companion object {
+        const val TAG = "filter"
+    }
+
     private var _binding: FragmentFilterBinding? = null
 
     private val binding get() = _binding!!
