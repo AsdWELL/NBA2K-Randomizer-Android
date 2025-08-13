@@ -1,6 +1,7 @@
 package com.example.nbarandomizer.models
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 data class AttributeRatings (
@@ -17,13 +18,16 @@ data class Badge (
 
 @Serializable
 data class PlayerDetails (
-    val id: Int,
-    val name: String,
-    val team: String,
-    val overall: Rating,
+    override val id: Int,
+    override val name: String,
+    override val team: String,
+    override val overall: Rating,
     val height: Int,
     val position: String,
-    val photoUrl: String,
+    override val photoUrl: String,
     val attributes: List<AttributeRatings>,
     val badges: List<Badge>
-)
+) : IPlayerBase {
+    @Transient
+    override lateinit var url: String
+}

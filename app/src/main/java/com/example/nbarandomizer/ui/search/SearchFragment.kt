@@ -43,6 +43,16 @@ class SearchFragment : Fragment(), IPlayerDetailsListener {
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
     }
 
+    private fun hideKeyboard() {
+        binding.searchView.clearFocus()
+
+        val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE)
+                as? InputMethodManager
+                ?: return
+
+        imm.hideSoftInputFromWindow(binding.searchView.windowToken, 0)
+    }
+
     private fun showKeyboard() {
         binding.searchView.requestFocus()
 
@@ -115,11 +125,11 @@ class SearchFragment : Fragment(), IPlayerDetailsListener {
     }
 
     override fun showPlayerDetails(player: IPlayerBase, playerCard: View) {
+        hideKeyboard()
+
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val details = playersService.downloadLatest2KVersionPlayerDetails(player)
-
-                val playerDetailsFragment = PlayerDetailsFragment(details, playerCard)
+                val playerDetailsFragment = PlayerDetailsFragment(player, playerCard)
 
                 withContext(Dispatchers.Main) {
                     requireActivity().supportFragmentManager
@@ -128,11 +138,19 @@ class SearchFragment : Fragment(), IPlayerDetailsListener {
                         .addToBackStack("details")
                         .commit()
                 }
+
+                val details = playersService.downloadLatest2KVersionPlayerDetails(player)
+
+                withContext(Dispatchers.Main) {
+                    playerDetailsFragment.playerDetails = details
+                }
             }
             catch(ex: Exception) {
                 withContext(Dispatchers.Main) {
                     if (ex.message != null)
                         toastMessage(ex.message!!)
+
+                    requireActivity().supportFragmentManager.popBackStack()
                 }
             }
         }
