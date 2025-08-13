@@ -18,7 +18,7 @@ class SingleGameViewHolder(private val binding: ItemHistoryPlayerBinding) : Recy
 
             Glide.with(binding.root)
                 .load(player.photoUrl)
-                .signature(ObjectKey("${player.id}_${player.team}"))
+                .signature(ObjectKey("${player.team}_${player.photoUrl}"))
                 .into(photo)
         }
     }

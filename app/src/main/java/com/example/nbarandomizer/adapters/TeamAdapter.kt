@@ -51,7 +51,7 @@ class TeamViewHolder(private val binding: PlayerCardBinding) : RecyclerView.View
 
             Glide.with(binding.root)
                 .load(player.photoUrl)
-                .signature(ObjectKey("${player.id}_${player.team}"))
+                .signature(ObjectKey("${player.team}_${player.photoUrl}"))
                 .circleCrop()
                 .into(photo)
 

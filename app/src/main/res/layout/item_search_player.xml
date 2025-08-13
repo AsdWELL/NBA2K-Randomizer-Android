@@ -27,7 +27,7 @@
         android:layout_marginHorizontal="10dp"
         android:textSize="14sp"
         android:textStyle="bold|italic"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/overallCardView"
         app:layout_constraintStart_toEndOf="@+id/photo"
         app:layout_constraintTop_toTopOf="@+id/photo" />
 
@@ -39,6 +39,20 @@
         app:layout_constraintBottom_toBottomOf="@+id/photo"
         app:layout_constraintEnd_toEndOf="@+id/name"
         app:layout_constraintStart_toStartOf="@+id/name" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/overallCardView"
+        style="@style/ratingCard"
+        android:tooltipText="Overall"
+        android:layout_marginEnd="15dp"
+        app:layout_constraintBottom_toBottomOf="@+id/photo"
+        app:layout_constraintTop_toTopOf="@+id/photo"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/overallTextView"
+            style="@style/ratingText" />
+    </androidx.cardview.widget.CardView>
 
     <com.google.android.material.divider.MaterialDivider
         android:id="@+id/divider"

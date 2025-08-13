@@ -48,7 +48,7 @@ class PlayerViewHolder(private val binding: ItemPlayerBinding) : RecyclerView.Vi
 
             Glide.with(binding.root)
                 .load(player.photoUrl)
-                .signature(ObjectKey("${player.id}_${player.team}"))
+                .signature(ObjectKey("${player.team}_${player.photoUrl}"))
                 .into(photo)
         }
 
