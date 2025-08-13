@@ -1,8 +1,8 @@
 package com.example.nbarandomizer.listeners
 
 import android.view.View
-import com.example.nbarandomizer.models.Player
+import com.example.nbarandomizer.models.IPlayerBase
 
 interface IPlayerDetailsListener {
-    fun showPlayerDetails(player: Player, playerCard: View)
+    fun showPlayerDetails(player: IPlayerBase, playerCard: View)
 }

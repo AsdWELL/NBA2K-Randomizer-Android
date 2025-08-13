@@ -9,6 +9,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.signature.ObjectKey
 import com.example.nbarandomizer.callbacks.SearchPlayerResultsDiffCallback
 import com.example.nbarandomizer.databinding.ItemSearchPlayerBinding
+import com.example.nbarandomizer.listeners.IPlayerDetailsListener
 import com.example.nbarandomizer.models.SearchPlayerResult
 import com.example.nbarandomizer.ui.providers.CardOutlineProvider
 
@@ -29,7 +30,9 @@ class SearchResultViewHolder(private val binding: ItemSearchPlayerBinding) : Rec
         card.outlineSpotShadowColor = color
     }
 
-    fun bind(searchPlayerResult: SearchPlayerResult) {
+    fun bind(searchPlayerResult: SearchPlayerResult, playerDetailsListener: IPlayerDetailsListener) {
+        itemView.transitionName = searchPlayerResult.url
+
         with(binding) {
             name.text = searchPlayerResult.name
             team.text = searchPlayerResult.team
@@ -42,10 +45,14 @@ class SearchResultViewHolder(private val binding: ItemSearchPlayerBinding) : Rec
                 .signature(ObjectKey("${searchPlayerResult.team}_${searchPlayerResult.photoUrl}"))
                 .into(photo)
         }
+
+        itemView.setOnClickListener {
+            playerDetailsListener.showPlayerDetails(searchPlayerResult, it)
+        }
     }
 }
 
-class SearchResultsAdapter
+class SearchResultsAdapter(private val playerDetailsListener: IPlayerDetailsListener)
     : ListAdapter<SearchPlayerResult, SearchResultViewHolder>(SearchPlayerResultsDiffCallback()) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchResultViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -55,6 +62,6 @@ class SearchResultsAdapter
     }
 
     override fun onBindViewHolder(holder: SearchResultViewHolder, position: Int) {
-        holder.bind(currentList[position])
+        holder.bind(currentList[position], playerDetailsListener)
     }
 }

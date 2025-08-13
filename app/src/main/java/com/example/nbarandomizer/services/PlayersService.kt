@@ -3,14 +3,17 @@ package com.example.nbarandomizer.services
 import android.content.Context
 import androidx.core.content.ContextCompat
 import com.example.nbarandomizer.R
+import com.example.nbarandomizer.exceptions.EmptyAttributeException
 import com.example.nbarandomizer.exceptions.LostConnectionException
 import com.example.nbarandomizer.exceptions.PlayerDetailsFileNotFoundException
 import com.example.nbarandomizer.exceptions.RosterFileNotFoundException
 import com.example.nbarandomizer.models.AttributeRatings
 import com.example.nbarandomizer.models.Badge
 import com.example.nbarandomizer.models.Epoch
+import com.example.nbarandomizer.models.IPlayerBase
 import com.example.nbarandomizer.models.Player
 import com.example.nbarandomizer.models.PlayerDetails
+import com.example.nbarandomizer.models.PlayerDto
 import com.example.nbarandomizer.models.Rating
 import com.example.nbarandomizer.models.SearchPlayerResult
 import com.example.nbarandomizer.models.SearchPlayerResultDto
@@ -45,6 +48,8 @@ class PlayersService(private val context: Context) : Closeable {
     private val _client = HttpClient(CIO)
 
     var notifyProgressBar: (() -> Unit)? = null
+
+    private val attributePattern = Regex("""(\d+)\s*([+-]\d+\s+)?(.+)""")
 
     private fun getSuffixUrl(epoch: Epoch): String {
         return "/lists/top-100-" + when(epoch) {
@@ -130,10 +135,9 @@ class PlayersService(private val context: Context) : Closeable {
     }
 
     private fun parseAttribute(input: String): Rating {
-        val pattern = Regex("""(\d+)\s*([+-]\d+\s+)?(.+)""")
+        val matchResult = attributePattern.find(input) ?: throw EmptyAttributeException()
 
-        val matchResult = pattern.find(input)
-        val (value, _, name) = matchResult!!.destructured
+        val (value, _, name) = matchResult.destructured
 
         return Rating(value.toInt(), getStatColor(value.toInt()), name)
     }
@@ -157,7 +161,7 @@ class PlayersService(private val context: Context) : Closeable {
         )
     }
 
-    private suspend fun parsePlayersDetails(player: Player, content: String): PlayerDetails {
+    private suspend fun parsePlayersDetails(player: PlayerDto, content: String): PlayerDetails {
         return withContext(Dispatchers.IO) {
             val document = Ksoup.parse(content)
 
@@ -261,13 +265,61 @@ class PlayersService(private val context: Context) : Closeable {
         return players
     }
 
-    suspend fun downloadLatest2KVersionPlayerDetails(player: Player): PlayerDetails {
+    private suspend fun extractAttr(playerInfo: List<String>, attr: String): String {
+        return playerInfo.find { it.contains(attr, true) }!!
+            .replace("$attr:", "", true).trim()
+
+    }
+
+    private suspend fun parsePositionAndHeight(content: String): Pair<String, String> {
+        val document = Ksoup.parse(content)
+
+        val playerInfo = document.select(".mb-1").map { it.text() }
+
+        val positionTitle = "position"
+        val heightTitle = "height"
+
+        val position = extractAttr(playerInfo, positionTitle).replace(" /", ",")
+
+        val height = extractAttr(playerInfo, heightTitle)
+
+        return position to height.substring(0, height.indexOf(" ("))
+    }
+
+    private suspend fun getPositionAndHeight(content: String): Pair<String, String> {
+        var endIndex = content.indexOf("<!-- Start Badges Overview -->")
+
+        if (endIndex == -1)
+            endIndex = content.indexOf("<!-- End Tab Content -->")
+
+        val trimmedContent = content.substring(
+            content.indexOf("<div class=\"header-subtitle\">"),
+            endIndex
+        ).trim()
+
+        return parsePositionAndHeight(trimmedContent.removeSuffix("</div>".repeat(2)))
+    }
+
+    suspend fun downloadLatest2KVersionPlayerDetails(playerBase: IPlayerBase): PlayerDetails {
         return try {
-            val content = _client.get(player.url).bodyAsText()
+            val content = _client.get(playerBase.url).bodyAsText()
 
             val trimmedContent = content.substring(
                 content.indexOf("<!-- Start Atrributes Tab -->"),
                 content.indexOf("<!-- End Badges Tab -->")
+            )
+
+            val positionToHeight = getPositionAndHeight(content)
+
+            val player = PlayerDto(
+                id = playerBase.id,
+                name = playerBase.name,
+                team = playerBase.team,
+                overall = playerBase.overall,
+                height = inchesToCm(positionToHeight.second),
+                position = positionToHeight.first,
+                url = playerBase.url,
+                photoUrl = playerBase.photoUrl
             )
 
             val details = parsePlayersDetails(player, trimmedContent)
@@ -281,8 +333,11 @@ class PlayersService(private val context: Context) : Closeable {
         catch (ex: CancellationException) {
             throw ex
         }
+        catch (ex: EmptyAttributeException) {
+            throw ex
+        }
         catch (ex: Exception) {
-            downloadLatest2KVersionPlayerDetails(player)
+            downloadLatest2KVersionPlayerDetails(playerBase)
         }
     }
 

@@ -18,6 +18,7 @@ import com.example.nbarandomizer.extensions.createReturnTransformation
 import com.example.nbarandomizer.extensions.hide
 import com.example.nbarandomizer.extensions.show
 import com.example.nbarandomizer.listeners.IPlayerCardListener
+import com.example.nbarandomizer.models.IPlayerBase
 import com.example.nbarandomizer.models.Player
 import com.example.nbarandomizer.ui.playerDetails.PlayerDetailsFragment
 import com.example.nbarandomizer.viewModels.SharedViewModel
@@ -47,7 +48,7 @@ class TeamFragment(
         adapter.submitList(newData)
     }
 
-    override fun showPlayerDetails(player: Player, playerCard: View) {
+    override fun showPlayerDetails(player: IPlayerBase, playerCard: View) {
         if (sharedViewModel.isDownloadingDetails()) {
             toastMessage("Погоди ща скачается")
             return

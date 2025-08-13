@@ -16,15 +16,15 @@ enum class Epoch {
 }
 
 @Serializable
-data class Player(
-    val id: Int,
-    var name: String,
-    val team: String,
-    val overall: Rating,
+data class Player (
+    override val id: Int,
+    override var name: String,
+    override val team: String,
+    override val overall: Rating,
     val threePointRating : Rating,
     val dunkRating: Rating,
     val height: Int,
     val position: String,
-    val url: String,
-    val photoUrl: String
-)
+    override val url: String,
+    override val photoUrl: String
+) : IPlayerBase

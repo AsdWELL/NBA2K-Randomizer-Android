@@ -14,7 +14,7 @@ import com.example.nbarandomizer.adapters.PlayerAdapter
 import com.example.nbarandomizer.databinding.FragmentRosterBinding
 import com.example.nbarandomizer.extensions.applyFilterSettingsAndSort
 import com.example.nbarandomizer.listeners.IPlayerDetailsListener
-import com.example.nbarandomizer.models.Player
+import com.example.nbarandomizer.models.IPlayerBase
 import com.example.nbarandomizer.ui.playerDetails.PlayerDetailsFragment
 import com.example.nbarandomizer.viewModels.SharedViewModel
 import com.example.nbarandomizer.viewModels.UiState
@@ -35,7 +35,7 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
     }
 
-    override fun showPlayerDetails(player: Player, playerCard: View) {
+    override fun showPlayerDetails(player: IPlayerBase, playerCard: View) {
         if (sharedViewModel.isDownloadingDetails()) {
             toastMessage("Погоди ща скачается")
             return

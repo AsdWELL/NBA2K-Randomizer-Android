@@ -9,8 +9,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.core.transition.doOnEnd
-import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,13 +20,16 @@ import com.example.nbarandomizer.adapters.SearchResultsAdapter
 import com.example.nbarandomizer.databinding.FragmentSearchBinding
 import com.example.nbarandomizer.extensions.createEnterTransformation
 import com.example.nbarandomizer.extensions.createReturnTransformation
+import com.example.nbarandomizer.listeners.IPlayerDetailsListener
+import com.example.nbarandomizer.models.IPlayerBase
 import com.example.nbarandomizer.services.PlayersService
+import com.example.nbarandomizer.ui.playerDetails.PlayerDetailsFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-class SearchFragment : Fragment() {
+class SearchFragment : Fragment(), IPlayerDetailsListener {
     private var _binding: FragmentSearchBinding? = null
 
     private val binding get() = _binding!!
@@ -35,6 +38,10 @@ class SearchFragment : Fragment() {
         get() = (requireActivity().applicationContext as App).playersService
 
     private lateinit var adapter: SearchResultsAdapter
+
+    private fun toastMessage(msg: String) {
+        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+    }
 
     private fun showKeyboard() {
         binding.searchView.requestFocus()
@@ -64,7 +71,7 @@ class SearchFragment : Fragment() {
     }
 
     private fun initializeSearchRecyclerView() {
-        adapter = SearchResultsAdapter()
+        adapter = SearchResultsAdapter(this)
 
         with(binding.recyclerView) {
             layoutManager = LinearLayoutManager(context)
@@ -104,6 +111,30 @@ class SearchFragment : Fragment() {
             ordering = TransitionSet.ORDERING_TOGETHER
             addTransition(createReturnTransformation(binding.root, searchBar))
             addTransition(createReturnTransformation(binding.searchView, searchBar))
+        }
+    }
+
+    override fun showPlayerDetails(player: IPlayerBase, playerCard: View) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val details = playersService.downloadLatest2KVersionPlayerDetails(player)
+
+                val playerDetailsFragment = PlayerDetailsFragment(details, playerCard)
+
+                withContext(Dispatchers.Main) {
+                    requireActivity().supportFragmentManager
+                        .beginTransaction()
+                        .add(R.id.container, playerDetailsFragment, "details")
+                        .addToBackStack("details")
+                        .commit()
+                }
+            }
+            catch(ex: Exception) {
+                withContext(Dispatchers.Main) {
+                    if (ex.message != null)
+                        toastMessage(ex.message!!)
+                }
+            }
         }
     }
 }
