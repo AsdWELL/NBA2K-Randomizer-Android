@@ -63,6 +63,10 @@ class SearchFragment : Fragment(), IPlayerDetailsListener {
         imm.showSoftInput(binding.searchView, InputMethodManager.SHOW_IMPLICIT)
     }
 
+    private fun fragmentManagerBackStack() {
+        requireActivity().supportFragmentManager.popBackStack()
+    }
+
     private fun bindSearchViewToRecyclerView() {
         binding.searchView.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -97,7 +101,7 @@ class SearchFragment : Fragment(), IPlayerDetailsListener {
 
         binding.root.setOnClickListener {}
 
-        binding.backBtn.setOnClickListener { requireActivity().supportFragmentManager.popBackStack() }
+        binding.backBtn.setOnClickListener { fragmentManagerBackStack() }
 
         initializeSearchRecyclerView()
         bindSearchViewToRecyclerView()
@@ -134,8 +138,8 @@ class SearchFragment : Fragment(), IPlayerDetailsListener {
                 withContext(Dispatchers.Main) {
                     requireActivity().supportFragmentManager
                         .beginTransaction()
-                        .add(R.id.container, playerDetailsFragment, "details")
-                        .addToBackStack("details")
+                        .add(R.id.container, playerDetailsFragment, PlayerDetailsFragment.TAG)
+                        .addToBackStack(PlayerDetailsFragment.TAG)
                         .commit()
                 }
 
@@ -150,7 +154,9 @@ class SearchFragment : Fragment(), IPlayerDetailsListener {
                     if (ex.message != null)
                         toastMessage(ex.message!!)
 
-                    requireActivity().supportFragmentManager.popBackStack()
+                    if (requireActivity().supportFragmentManager.fragments.last()
+                        .tag?.equals(PlayerDetailsFragment.TAG) == true)
+                        fragmentManagerBackStack()
                 }
             }
         }

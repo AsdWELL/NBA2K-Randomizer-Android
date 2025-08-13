@@ -64,6 +64,7 @@
             app:layout_constraintTop_toBottomOf="@+id/name" />
         <TextView
             android:id="@+id/height"
+            android:visibility="gone"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textAlignment="center"
@@ -75,6 +76,7 @@
 
         <TextView
             android:id="@+id/position"
+            android:visibility="gone"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textAlignment="center"
