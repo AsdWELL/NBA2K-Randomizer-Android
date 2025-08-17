@@ -150,7 +150,7 @@ class SharedViewModel : ViewModel() {
                 }
             }
             catch (ex: Exception) {
-                _uiState.value = UiState.Error("Интернет включи сука")
+                _uiState.value = UiState.Error(ex.message!!)
 
                 return@launch
             }
