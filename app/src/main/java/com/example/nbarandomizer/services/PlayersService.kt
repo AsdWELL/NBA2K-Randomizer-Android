@@ -81,6 +81,7 @@ class PlayersService(private val context: Context) : Closeable {
 
     private fun getOvrColor(ovr: Int): Int {
         return when(ovr) {
+            0 -> getColor(R.color.black)
             in 0..83 -> getColor(R.color.ovr8083)
             in 84..86 -> getColor(R.color.ovr8486)
             in 87..89 -> getColor(R.color.ovr8789)
@@ -94,6 +95,7 @@ class PlayersService(private val context: Context) : Closeable {
 
     private fun getStatColor(value: Int): Int {
         return when(value) {
+            0 -> getColor(R.color.black)
             in 0..59 -> getColor(R.color.stat059)
             in 60..69 -> getColor(R.color.stat6069)
             in 70..79 -> getColor(R.color.stat7079)
@@ -102,13 +104,13 @@ class PlayersService(private val context: Context) : Closeable {
         }
     }
 
-    private suspend fun parsePlayers(content: String, epoch: Epoch) = coroutineScope {
+    private suspend fun parsePlayers(content: String) = coroutineScope {
         async(Dispatchers.IO) {
             val document = Ksoup.parse(content)
 
             val names = document.select(".entry-font").map { it.text().trim() }
             val info = document.select(".entry-subtext-font").map { it.text().trim() }
-            val ratings = document.select(".attribute-box").map { it.text().trim().toInt() }
+            val ratings = document.select(".attribute-box").map { it.text().trim().toIntOrNull() ?: 0 }
             val urls = document.select(".entry-font").map(::extractPlayerUrl)
             val photosUrl = document.select(".entry-bg").map(::extractPlayerPhotoUrl)
 
@@ -167,12 +169,14 @@ class PlayersService(private val context: Context) : Closeable {
 
             val attributesContent = document.select("#nav-attributes")
 
-            val attributes = if (attributesContent.isEmpty())
-                emptyList()
-            else
+            val attributes = try {
                 attributesContent[0].children()[0].children()
                     .flatMap { it.select(".card") }
                     .map(::parseAttributeCard)
+            }
+            catch (ex: Exception) {
+                emptyList()
+            }
 
             val badgeCards = document.select(".badge-box")
 
@@ -241,7 +245,7 @@ class PlayersService(private val context: Context) : Closeable {
 
         val trimmedContent = content.substring(content.indexOf("<tbody>"), content.indexOf("</tbody>"))
 
-        val players = parsePlayers(trimmedContent, epoch).await()
+        val players = parsePlayers(trimmedContent).await()
 
         savePlayersToFile(players, epoch, _latestVersion)
 
