@@ -74,10 +74,17 @@ class SearchFragment : Fragment(), IPlayerDetailsListener {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 lifecycleScope.launch(Dispatchers.IO) {
-                    val searchResults = playersService.searchPlayers(s.toString())
+                    try {
+                        val searchResults = playersService.searchPlayers(s.toString())
 
-                    withContext(Dispatchers.Main) {
-                        adapter.submitList(searchResults)
+                        withContext(Dispatchers.Main) {
+                            adapter.submitList(searchResults)
+                        }
+                    }
+                    catch (ex: Exception) {
+                        withContext(Dispatchers.Main) {
+                            toastMessage(ex.message ?: "Отсутствует подключение к интернету")
+                        }
                     }
                 }
             }
