@@ -6,7 +6,8 @@ enum class Version2K {
     _2K23,
     _2K24,*/
     _2K25,
-    _2K26;
+    _2K26,
+    _2K27;
 
     override fun toString(): String {
         return super.toString().removePrefix("_")
