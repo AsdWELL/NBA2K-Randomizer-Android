@@ -1,6 +1,8 @@
 package com.example.nbarandomizer.services
 
 import android.content.Context
+import android.nfc.Tag
+import android.util.Log
 import androidx.core.content.ContextCompat
 import com.example.nbarandomizer.R
 import com.example.nbarandomizer.exceptions.EmptyAttributeException
@@ -49,7 +51,7 @@ class PlayersService(private val context: Context) : Closeable {
 
     var notifyProgressBar: (() -> Unit)? = null
 
-    private val attributePattern = Regex("""(\d+)\s*([+-]\d+\s+)?(.+)""")
+    private val attributePattern = Regex("""^(.+?)\s+([+-]\d+\s+)?(\d+|-+)$""")
 
     private fun getSuffixUrl(epoch: Epoch): String {
         return "/lists/top-100-" + when(epoch) {
@@ -139,9 +141,11 @@ class PlayersService(private val context: Context) : Closeable {
     private fun parseAttribute(input: String): Rating {
         val matchResult = attributePattern.find(input) ?: throw EmptyAttributeException()
 
-        val (value, _, name) = matchResult.destructured
+        val (name, _, value) = matchResult.destructured
 
-        return Rating(value.toInt(), getStatColor(value.toInt()), name)
+        val intValue = value.toIntOrNull() ?: 0
+
+        return Rating(intValue, getStatColor(intValue), name)
     }
 
     private fun parseAttributeCard(element: Element): AttributeRatings {
@@ -294,7 +298,7 @@ class PlayersService(private val context: Context) : Closeable {
         var endIndex = content.indexOf("<!-- Start Badges Overview -->")
 
         if (endIndex == -1)
-            endIndex = content.indexOf("<!-- End Tab Content -->")
+            endIndex = content.indexOf("<!-- End Player Text Content -->")
 
         val trimmedContent = content.substring(
             content.indexOf("<div class=\"header-subtitle\">"),
