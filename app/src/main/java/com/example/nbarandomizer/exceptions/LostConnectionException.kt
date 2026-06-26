@@ -1,3 +1,3 @@
 package com.example.nbarandomizer.exceptions
 
-class LostConnectionException : Exception("Интернет включи сука")
+class LostConnectionException : Exception("С интернетом случилось говно")
