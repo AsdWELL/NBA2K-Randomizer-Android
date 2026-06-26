@@ -24,6 +24,7 @@ import com.example.nbarandomizer.models.PlayerDetails
 import com.example.nbarandomizer.ui.providers.CardOutlineProvider
 import com.example.nbarandomizer.viewModels.SharedViewModel
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlin.math.abs
 
 class PlayerDetailsFragment(
     private var playerBase: IPlayerBase,
@@ -73,7 +74,14 @@ class PlayerDetailsFragment(
                 .circleCrop()
                 .into(photo)
 
+            Glide.with(root)
+                .load(playerBase.photoUrl)
+                .signature(ObjectKey("${playerBase.team}_${playerBase.photoUrl}"))
+                .circleCrop()
+                .into(smallPhoto)
+
             name.text = playerBase.name
+            smallName.text = playerBase.name
 
             team.text = "Team: ${playerBase.team}"
 
@@ -138,9 +146,22 @@ class PlayerDetailsFragment(
         if (playerDetails != null)
             setDetails()
 
-        binding.backBtn.setOnClickListener { requireActivity().supportFragmentManager.popBackStack() }
-
         return binding.root
+    }
+
+    private fun addAppBarAnimation() {
+        binding.appBarLayout.addOnOffsetChangedListener { appBarLayout, verticalOffset ->
+            val totalScrollRange = appBarLayout.totalScrollRange
+            val percentage = (abs(verticalOffset).toFloat() / totalScrollRange.toFloat())
+
+            binding.expandedHeader.alpha = 1f - (percentage * 1.5f)
+
+            binding.collapsedHeader.alpha = percentage
+        }
+
+        binding.backBtn.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -165,6 +186,8 @@ class PlayerDetailsFragment(
             addTransition(createReturnTransformation(binding.root, playerCard))
             addTransition(createReturnTransformation(binding.photoContainer, playerCard.findViewById(R.id.photo)))
         }
+
+        addAppBarAnimation()
     }
 
     override fun onDestroy() {
