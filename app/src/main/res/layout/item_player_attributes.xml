@@ -40,6 +40,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="@+id/attributeName"
         app:layout_constraintStart_toStartOf="parent"
+        android:nestedScrollingEnabled="false"
         app:layout_constraintTop_toBottomOf="@+id/attributeCard" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
