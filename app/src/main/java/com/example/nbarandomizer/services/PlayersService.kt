@@ -1,8 +1,6 @@
 package com.example.nbarandomizer.services
 
 import android.content.Context
-import android.nfc.Tag
-import android.util.Log
 import androidx.core.content.ContextCompat
 import com.example.nbarandomizer.R
 import com.example.nbarandomizer.exceptions.EmptyAttributeException
@@ -35,6 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.Closeable
@@ -52,6 +51,8 @@ class PlayersService(private val context: Context) : Closeable {
     var notifyProgressBar: (() -> Unit)? = null
 
     private val attributePattern = Regex("""^(.+?)\s+([+-]\d+\s+)?(\d+|-+)$""")
+
+    private val maxRetries = 3
 
     private fun getSuffixUrl(epoch: Epoch): String {
         return "/lists/top-100-" + when(epoch) {
@@ -309,43 +310,50 @@ class PlayersService(private val context: Context) : Closeable {
     }
 
     suspend fun downloadLatest2KVersionPlayerDetails(playerBase: IPlayerBase): PlayerDetails {
-        return try {
-            val content = _client.get(playerBase.url).bodyAsText()
+        var attempts = 0
 
-            val trimmedContent = content.substring(
-                content.indexOf("<!-- Start Atrributes Tab -->"),
-                content.indexOf("<!-- End Badges Tab -->")
-            )
+        while (true) {
+            try {
+                val content = _client.get(playerBase.url).bodyAsText()
 
-            val positionToHeight = getPositionAndHeight(content)
+                val trimmedContent = content.substring(
+                    content.indexOf("<!-- Start Atrributes Tab -->"),
+                    content.indexOf("<!-- End Badges Tab -->")
+                )
 
-            val player = PlayerDto(
-                id = playerBase.id,
-                name = playerBase.name,
-                team = playerBase.team,
-                overall = playerBase.overall,
-                height = inchesToCm(positionToHeight.second),
-                position = positionToHeight.first,
-                url = playerBase.url,
-                photoUrl = playerBase.photoUrl
-            )
+                val positionToHeight = getPositionAndHeight(content)
 
-            val details = parsePlayersDetails(player, trimmedContent)
+                val player = PlayerDto(
+                    id = playerBase.id,
+                    name = playerBase.name,
+                    team = playerBase.team,
+                    overall = playerBase.overall,
+                    height = inchesToCm(positionToHeight.second),
+                    position = positionToHeight.first,
+                    url = playerBase.url,
+                    photoUrl = playerBase.photoUrl
+                )
 
-            withContext(Dispatchers.Main) {
-                notifyProgressBar?.invoke()
+                val details = parsePlayersDetails(player, trimmedContent)
+
+                withContext(Dispatchers.Main) {
+                    notifyProgressBar?.invoke()
+                }
+
+                return details
             }
+            catch (ex: CancellationException) {
+                throw ex
+            }
+            catch (ex: EmptyAttributeException) {
+                throw ex
+            }
+            catch (ex: Exception) {
+                if (++attempts >= maxRetries)
+                    throw LostConnectionException()
 
-            return details
-        }
-        catch (ex: CancellationException) {
-            throw ex
-        }
-        catch (ex: EmptyAttributeException) {
-            throw ex
-        }
-        catch (ex: Exception) {
-            downloadLatest2KVersionPlayerDetails(playerBase)
+                delay(1000)
+            }
         }
     }
 
