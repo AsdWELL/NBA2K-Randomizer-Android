@@ -15,6 +15,7 @@ import com.example.nbarandomizer.databinding.FragmentFilterBinding
 import com.example.nbarandomizer.extensions.createEnterTransformation
 import com.example.nbarandomizer.extensions.createReturnTransformation
 import com.example.nbarandomizer.extensions.hide
+import com.example.nbarandomizer.extensions.makeBlurBackground
 import com.example.nbarandomizer.extensions.show
 import com.example.nbarandomizer.models.FilterSettings
 import com.example.nbarandomizer.models.Position
@@ -154,5 +155,7 @@ class FilterFragment : Fragment() {
         returnTransition = createReturnTransformation(binding.filterContainer, searchButton) {
             searchButton.show()
         }
+
+        makeBlurBackground()
     }
 }

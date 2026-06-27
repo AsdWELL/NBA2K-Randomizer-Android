@@ -16,6 +16,7 @@ import com.example.nbarandomizer.databinding.FragmentTeamBinding
 import com.example.nbarandomizer.extensions.createEnterTransformation
 import com.example.nbarandomizer.extensions.createReturnTransformation
 import com.example.nbarandomizer.extensions.hide
+import com.example.nbarandomizer.extensions.makeBlurBackground
 import com.example.nbarandomizer.extensions.show
 import com.example.nbarandomizer.listeners.IPlayerCardListener
 import com.example.nbarandomizer.models.IPlayerBase
@@ -120,6 +121,8 @@ class TeamFragment(
         returnTransition = createReturnTransformation(binding.teamContainer, randomizeButton) {
             randomizeButton.show()
         }
+
+        makeBlurBackground()
     }
 
     override fun onDestroy() {
