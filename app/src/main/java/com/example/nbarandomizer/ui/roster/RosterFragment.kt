@@ -7,20 +7,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.nbarandomizer.R
 import com.example.nbarandomizer.adapters.PlayerAdapter
 import com.example.nbarandomizer.databinding.FragmentRosterBinding
 import com.example.nbarandomizer.extensions.applyFilterSettingsAndSort
 import com.example.nbarandomizer.listeners.IPlayerDetailsListener
 import com.example.nbarandomizer.models.IPlayerBase
+import com.example.nbarandomizer.models.FilterSettings
 import com.example.nbarandomizer.ui.playerDetails.PlayerDetailsFragment
 import com.example.nbarandomizer.viewModels.SharedViewModel
-import com.example.nbarandomizer.viewModels.UiState
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class RosterFragment : Fragment(), IPlayerDetailsListener {
     private var _binding: FragmentRosterBinding? = null
@@ -30,6 +27,7 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
     private lateinit var sharedViewModel: SharedViewModel
 
     private lateinit var adapter: PlayerAdapter
+    private var lastFilterSettings: FilterSettings? = null
 
     private fun toastMessage(msg: String) {
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
@@ -46,7 +44,9 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
             return
         }
 
-        val playerDetailsFragment = PlayerDetailsFragment(sharedViewModel.playersDetails[player.id], playerCard)
+        val playerDetailsFragment = PlayerDetailsFragment.newInstance(
+            player, playerCard.transitionName, sharedViewModel.playersDetails[player.id]
+        )
 
         requireActivity().supportFragmentManager
             .beginTransaction()
@@ -64,8 +64,6 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
         sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
 
         adapter = PlayerAdapter(this)
-
-        bindRoster()
 
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
         binding.recyclerView.adapter = adapter
@@ -87,26 +85,22 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
+        bindRoster()
+    }
+
     private fun showPlayersCount(count: Int) {
         binding.playersCountTextView.text = "Показано $count из 100 игроков"
     }
 
     private fun setFilteredRoster(scrollToTop: Boolean) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            if (sharedViewModel.uiState.value is UiState.LoadingRoster)
-                return@launch
-
-            val filteredPlayers = sharedViewModel.selectedRoster.applyFilterSettingsAndSort(sharedViewModel.filterSettings)
-
-            withContext(Dispatchers.Main) {
-                adapter.submitList(filteredPlayers) {
-                    if (scrollToTop)
-                        binding.recyclerView.scrollToPosition(0)
-                }
-
-                showPlayersCount(filteredPlayers.size)
-            }
+        val filteredPlayers = sharedViewModel.selectedRoster.applyFilterSettingsAndSort(sharedViewModel.filterSettings)
+        adapter.submitList(filteredPlayers) {
+            if (scrollToTop) _binding?.recyclerView?.scrollToPosition(0)
         }
+        showPlayersCount(filteredPlayers.size)
     }
 
     private fun bindRoster() {
@@ -114,14 +108,16 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
             setFilteredRoster(false)
         }
 
-        sharedViewModel.filterSettingsBinding.observe(viewLifecycleOwner) {
-            setFilteredRoster(true)
+        sharedViewModel.filterSettingsBinding.observe(viewLifecycleOwner) { settings ->
+            setFilteredRoster(lastFilterSettings != null && lastFilterSettings != settings)
+            lastFilterSettings = settings.copy()
         }
     }
 
-    override fun onDestroy() {
+    override fun onDestroyView() {
+        binding.recyclerView.adapter = null
+        lastFilterSettings = null
+        super.onDestroyView()
         _binding = null
-
-        super.onDestroy()
     }
 }

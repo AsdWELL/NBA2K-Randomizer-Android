@@ -5,45 +5,39 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.nbarandomizer.adapters.AttributesAdapter
 import com.example.nbarandomizer.databinding.FragmentAttributesBinding
-import com.example.nbarandomizer.listeners.IPageReadyListener
-import com.example.nbarandomizer.models.AttributeRatings
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.example.nbarandomizer.viewModels.PlayerDetailsViewModel
 
-class AttributesFragment(
-    private val attrs: List<AttributeRatings>,
-    private val onPageReadyListener: IPageReadyListener
-) : Fragment() {
+class AttributesFragment : Fragment() {
     private var _binding: FragmentAttributesBinding? = null
-
     private val binding get() = _binding!!
-
-    private lateinit var adapter: AttributesAdapter
+    private val detailsViewModel: PlayerDetailsViewModel by viewModels({ requireParentFragment() })
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentAttributesBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-        lifecycleScope.launch(Dispatchers.IO) {
-            adapter = AttributesAdapter()
-            adapter.attributesCollections = attrs
-
-            withContext(Dispatchers.Main) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        detailsViewModel.details.observe(viewLifecycleOwner) { details ->
+            if (details != null) {
                 binding.attributesRecyclerView.layoutManager = GridLayoutManager(context, 2)
-                binding.attributesRecyclerView.adapter = adapter
-
-                onPageReadyListener.onPageLoad()
+                binding.attributesRecyclerView.adapter = AttributesAdapter().apply {
+                    attributesCollections = details.attributes
+                }
             }
         }
+    }
 
-        return binding.root
+    override fun onDestroyView() {
+        binding.attributesRecyclerView.adapter = null
+        super.onDestroyView()
+        _binding = null
     }
 }

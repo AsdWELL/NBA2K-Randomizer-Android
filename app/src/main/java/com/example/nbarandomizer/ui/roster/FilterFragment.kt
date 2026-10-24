@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import com.example.nbarandomizer.R
 import com.example.nbarandomizer.databinding.FragmentFilterBinding
@@ -21,6 +22,7 @@ import com.example.nbarandomizer.models.FilterSettings
 import com.example.nbarandomizer.models.Position
 import com.example.nbarandomizer.models.SortingAttrs
 import com.example.nbarandomizer.viewModels.SharedViewModel
+import com.example.nbarandomizer.viewModels.FilterViewModel
 
 class FilterFragment : Fragment() {
     companion object {
@@ -34,6 +36,7 @@ class FilterFragment : Fragment() {
     private var _sortAscending = false
 
     private lateinit var sharedViewModel: SharedViewModel
+    private val filterViewModel: FilterViewModel by viewModels()
 
     private fun animateAndChangeSortDirection() {
         _sortAscending = !_sortAscending
@@ -62,32 +65,35 @@ class FilterFragment : Fragment() {
     }
 
     private fun initializeFilters() {
+        val settings = filterViewModel.draft ?: sharedViewModel.filterSettings.copy().also {
+            filterViewModel.draft = it
+        }
         with(binding.filterNameView) {
-            setText(sharedViewModel.filterSettings.name)
+            setText(settings.name)
         }
 
         with(binding.filterPositionView) {
             initializeSpinner(this, Position.entries.map { it.toString() })
-            setText(sharedViewModel.filterSettings.position, false)
+            setText(settings.position, false)
         }
 
         with(binding.filterTeamView) {
             initializeSpinner(this, sharedViewModel.selectedRoster.map { it.team }.distinct().sorted())
-            setText(sharedViewModel.filterSettings.team, false)
+            setText(settings.team, false)
         }
 
         with(binding.sortingView) {
             initializeSpinner(this, SortingAttrs.entries.map { it.title }, false)
-            setText(sharedViewModel.filterSettings.sortingAttr, false)
+            setText(settings.sortingAttr, false)
         }
 
         with(binding.sortDirectionView) {
-            if (sharedViewModel.filterSettings.sortAscending)
+            if (settings.sortAscending)
                 this.rotation = 90f
             else
                 this.rotation = -90f
 
-            _sortAscending = sharedViewModel.filterSettings.sortAscending
+            _sortAscending = settings.sortAscending
         }
     }
 
@@ -109,13 +115,9 @@ class FilterFragment : Fragment() {
         }
 
         binding.saveFiltersBtn.setOnClickListener {
-            val name = binding.filterNameView.text.toString().trim()
-            val team = binding.filterTeamView.text.toString()
-            val position = binding.filterPositionView.text.toString()
-            val sortingAttr = binding.sortingView.text.toString()
-
-            sharedViewModel.filterSettings =
-                sharedViewModel.filterSettings.copy(name = name, team = team, position = position, sortingAttr = sortingAttr, sortAscending = _sortAscending)
+            saveDraft()
+            val draft = filterViewModel.draft!!
+            sharedViewModel.filterSettings = draft.copy(name = draft.name.trim())
         }
     }
 
@@ -148,14 +150,32 @@ class FilterFragment : Fragment() {
 
         val searchButton = requireActivity().findViewById<View>(R.id.filter_button)
 
-        enterTransition = createEnterTransformation(searchButton, binding.filterContainer) {
-            searchButton.hide()
-        }
-
-        returnTransition = createReturnTransformation(binding.filterContainer, searchButton) {
-            searchButton.show()
+        if (searchButton != null) {
+            enterTransition = createEnterTransformation(searchButton, binding.filterContainer) {
+                searchButton.hide()
+            }
+            returnTransition = createReturnTransformation(binding.filterContainer, searchButton) {
+                searchButton.show()
+            }
         }
 
         makeBlurBackground()
+    }
+
+    private fun saveDraft() {
+        filterViewModel.draft = FilterSettings(
+            name = binding.filterNameView.text.toString(),
+            team = binding.filterTeamView.text.toString(),
+            position = binding.filterPositionView.text.toString(),
+            sortingAttr = binding.sortingView.text.toString(),
+            sortAscending = _sortAscending
+        )
+    }
+
+    override fun onDestroyView() {
+        saveDraft()
+        binding.sortDirectionView.animate().cancel()
+        super.onDestroyView()
+        _binding = null
     }
 }

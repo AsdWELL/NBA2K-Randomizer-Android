@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.nbarandomizer.R
 import com.example.nbarandomizer.animators.PlayerCardAnimator
@@ -20,15 +20,11 @@ import com.example.nbarandomizer.extensions.makeBlurBackground
 import com.example.nbarandomizer.extensions.show
 import com.example.nbarandomizer.listeners.IPlayerCardListener
 import com.example.nbarandomizer.models.IPlayerBase
-import com.example.nbarandomizer.models.Player
 import com.example.nbarandomizer.ui.playerDetails.PlayerDetailsFragment
 import com.example.nbarandomizer.viewModels.SharedViewModel
+import com.example.nbarandomizer.viewModels.RandomizerViewModel
 
-class TeamFragment(
-    private val players: MutableList<Player>,
-    private val teamsCount: Int,
-    private val randomizeNewPlayer: (position: Int) -> Player
-) : Fragment(), IPlayerCardListener {
+class TeamFragment : Fragment(), IPlayerCardListener {
     companion object {
         const val TAG = "team"
     }
@@ -37,7 +33,8 @@ class TeamFragment(
 
     private val binding get() = _binding!!
 
-    private lateinit var sharedViewModel: SharedViewModel
+    private val sharedViewModel: SharedViewModel by activityViewModels()
+    private val randomizerViewModel: RandomizerViewModel by activityViewModels()
 
     private lateinit var adapter: TeamAdapter
 
@@ -46,11 +43,11 @@ class TeamFragment(
     }
 
     override fun onPlayerCardClick(position: Int) {
-        val newData = adapter.currentList.toMutableList().apply {
-            this[position] = randomizeNewPlayer(position)
+        try {
+            randomizerViewModel.replacePlayer(position)
+        } catch (ex: Exception) {
+            toastMessage(ex.message ?: "Не удалось заменить игрока")
         }
-
-        adapter.submitList(newData)
     }
 
     override fun showPlayerDetails(player: IPlayerBase, playerCard: View) {
@@ -64,16 +61,9 @@ class TeamFragment(
             return
         }
 
-        val playerDetailsFragment = PlayerDetailsFragment(sharedViewModel.playersDetails[player.id], playerCard)
-
-        playerDetailsFragment.onNicknameUpdate = { playerName, nickname ->
-            adapter.submitList(adapter.currentList.map { item ->
-                if (item.name == playerName)
-                    item.copy().apply { this.nickname = nickname}
-                else
-                    item
-            })
-        }
+        val playerDetailsFragment = PlayerDetailsFragment.newInstance(
+            player, playerCard.transitionName, sharedViewModel.playersDetails[player.id]
+        )
 
         requireActivity().supportFragmentManager
             .beginTransaction()
@@ -93,13 +83,10 @@ class TeamFragment(
 
         binding.root.setOnClickListener {}
 
-        sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
-
         adapter = TeamAdapter(this@TeamFragment)
-        adapter.submitList(players)
 
         binding.recyclerView.itemAnimator = PlayerCardAnimator()
-        binding.recyclerView.layoutManager = GridLayoutManager(context, teamsCount)
+        binding.recyclerView.layoutManager = GridLayoutManager(context, randomizerViewModel.teamsCount)
         binding.recyclerView.adapter = adapter
 
         return binding.root
@@ -108,26 +95,29 @@ class TeamFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        randomizerViewModel.currentTeam.observe(viewLifecycleOwner) { adapter.submitList(it) }
+
         view.doOnPreDraw {
             startPostponedEnterTransition()
         }
 
         val randomizeButton = requireActivity().findViewById<View>(R.id.randomizeButton)
 
-        enterTransition = createEnterTransformation(randomizeButton, binding.teamContainer) {
-            randomizeButton.hide()
-        }
-
-        returnTransition = createReturnTransformation(binding.teamContainer, randomizeButton) {
-            randomizeButton.show()
+        if (randomizeButton != null) {
+            enterTransition = createEnterTransformation(randomizeButton, binding.teamContainer) {
+                randomizeButton.hide()
+            }
+            returnTransition = createReturnTransformation(binding.teamContainer, randomizeButton) {
+                randomizeButton.show()
+            }
         }
 
         makeBlurBackground()
     }
 
-    override fun onDestroy() {
+    override fun onDestroyView() {
+        binding.recyclerView.adapter = null
+        super.onDestroyView()
         _binding = null
-
-        super.onDestroy()
     }
 }

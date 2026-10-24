@@ -7,16 +7,15 @@ import com.example.nbarandomizer.ui.randomizer.RandomizerFragment
 import com.example.nbarandomizer.ui.roster.RosterFragment
 
 class MainViewPagerAdapter(fragmentActivity: FragmentActivity) : FragmentStateAdapter(fragmentActivity) {
-    private val fragments = listOf(
-        RandomizerFragment(),
-        RosterFragment()
-    )
-
     override fun getItemCount(): Int {
-        return fragments.size
+        return 2
     }
 
     override fun createFragment(position: Int): Fragment {
-        return fragments[position]
+        return when (position) {
+            0 -> RandomizerFragment()
+            1 -> RosterFragment()
+            else -> error("Unknown page: $position")
+        }
     }
 }

@@ -6,13 +6,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nbarandomizer.models.Epoch
 import com.example.nbarandomizer.models.FilterSettings
-import com.example.nbarandomizer.models.History
 import com.example.nbarandomizer.models.Player
 import com.example.nbarandomizer.models.PlayerDetails
 import com.example.nbarandomizer.models.PlayerNickname
 import com.example.nbarandomizer.models.Version2K
 import com.example.nbarandomizer.services.PlayersService
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -39,7 +39,11 @@ class SharedViewModel : ViewModel() {
     private val _uiState = MutableLiveData<UiState>(UiState.Idle)
     val uiState: LiveData<UiState> get() = _uiState
 
-    private lateinit var nicknames: MutableList<PlayerNickname>
+    private var nicknames = mutableListOf<PlayerNickname>()
+    private var nicknamesJob: Job? = null
+
+    private val _detailsProgress = MutableLiveData(0)
+    val detailsProgress: LiveData<Int> = _detailsProgress
 
     var epoch = Epoch.Current
         private set
@@ -65,11 +69,10 @@ class SharedViewModel : ViewModel() {
             _selectedRosterBinding.value = value
         }
 
-    var isRosterReplaced = false
+    var rosterRevision = 0
+        private set
 
     var playersDetails = mutableListOf<PlayerDetails>()
-
-    val history = History()
 
     val nicknamesFile = "nicknames.json"
 
@@ -78,7 +81,7 @@ class SharedViewModel : ViewModel() {
             player.nickname = nicknames.find { it.playerName == player.name }?.nickname
         }
 
-        isRosterReplaced = true
+        rosterRevision++
         selectedRoster = players
     }
 
@@ -109,7 +112,7 @@ class SharedViewModel : ViewModel() {
     private suspend fun updatePlayersDetails(playersService: PlayersService, updatedPlayers: List<Player>, epoch: Epoch) {
         withContext(Dispatchers.IO) {
             val newDetails = updatedPlayers.map {
-                viewModelScope.async(Dispatchers.IO) { playersService.downloadLatest2KVersionPlayerDetails(it) }
+                async(Dispatchers.IO) { playersService.downloadLatest2KVersionPlayerDetails(it) }
             }.awaitAll().toMutableList()
 
             applyNickNamesToDetails(newDetails)
@@ -141,6 +144,7 @@ class SharedViewModel : ViewModel() {
 
         downloadingJob = viewModelScope.launch {
             _uiState.value = UiState.LoadingRoster
+            nicknamesJob?.join()
 
             val players: MutableList<Player>
 
@@ -149,8 +153,11 @@ class SharedViewModel : ViewModel() {
                     players = playersService.downloadAndCacheLatest2KVersionRosterByEpoch(epoch)
                 }
             }
+            catch (ex: CancellationException) {
+                throw ex
+            }
             catch (ex: Exception) {
-                _uiState.value = UiState.Error(ex.message!!)
+                _uiState.value = UiState.Error(ex.message ?: "Не удалось загрузить ростер")
 
                 return@launch
             }
@@ -164,17 +171,24 @@ class SharedViewModel : ViewModel() {
 
             applyNickNamesToPlayersAndSetRoster(players)
 
+            _detailsProgress.value = 0
             _uiState.value = UiState.LoadingDetails
 
-            updatePlayersDetails(playersService, updatedPlayers, epoch)
+            try {
+                updatePlayersDetails(playersService, updatedPlayers, epoch)
+            } catch (ex: CancellationException) {
+                throw ex
+            } catch (ex: Exception) {
+                _uiState.value = UiState.Error(ex.message ?: "Не удалось загрузить атрибуты")
+            }
         }
     }
 
     fun getRosterAndDetails(playersService: PlayersService, epoch: Epoch, version: Version2K) {
-        stopDownloadingJob()
-
         if (selectedRoster.isNotEmpty() && this.epoch == epoch && this.version == version)
             return
+
+        stopDownloadingJob()
 
         this.epoch = epoch
         this.version = version
@@ -183,6 +197,7 @@ class SharedViewModel : ViewModel() {
 
         downloadingJob = viewModelScope.launch {
              _uiState.value = UiState.LoadingRoster
+            nicknamesJob?.join()
 
             try {
                 val players = withContext(Dispatchers.IO) {
@@ -193,13 +208,17 @@ class SharedViewModel : ViewModel() {
 
                 _uiState.value = UiState.SuccessRoster
             }
+            catch (ex: CancellationException) {
+                throw ex
+            }
             catch (ex: Exception) {
-                _uiState.value = UiState.Error(ex.message!!)
+                _uiState.value = UiState.Error(ex.message ?: "Не удалось загрузить ростер")
 
                 return@launch
             }
 
             downloadingDetailsJob = viewModelScope.launch {
+                _detailsProgress.value = 0
                 _uiState.value = UiState.LoadingDetails
 
                 try {
@@ -211,8 +230,11 @@ class SharedViewModel : ViewModel() {
 
                     _uiState.value = UiState.SuccessDetails
                 }
+                catch (ex: CancellationException) {
+                    throw ex
+                }
                 catch (ex: Exception) {
-                    _uiState.value = UiState.Error(ex.message!!)
+                    _uiState.value = UiState.Error(ex.message ?: "Не удалось загрузить атрибуты")
 
                     playersDetails.clear()
 
@@ -260,8 +282,17 @@ class SharedViewModel : ViewModel() {
         }
     }
 
-    fun getNicknames(file: File) = viewModelScope.launch(Dispatchers.IO) {
-        nicknames = Json.decodeFromString<MutableList<PlayerNickname>>(file.readText())
+    fun getNicknames(file: File) {
+        if (nicknamesJob != null) return
+        nicknamesJob = viewModelScope.launch {
+            nicknames = withContext(Dispatchers.IO) {
+                Json.decodeFromString<MutableList<PlayerNickname>>(file.readText())
+            }
+        }
+    }
+
+    fun onDetailsDownloaded() {
+        _detailsProgress.value = (_detailsProgress.value ?: 0) + 1
     }
 
     fun saveNicknames(file: File) = viewModelScope.launch(Dispatchers.IO) {

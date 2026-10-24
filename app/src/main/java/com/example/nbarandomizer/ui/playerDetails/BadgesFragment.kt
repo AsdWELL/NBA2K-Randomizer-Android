@@ -5,45 +5,39 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.nbarandomizer.adapters.BadgesAdapter
 import com.example.nbarandomizer.databinding.FragmentBadgesBinding
-import com.example.nbarandomizer.listeners.IPageReadyListener
-import com.example.nbarandomizer.models.Badge
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.example.nbarandomizer.viewModels.PlayerDetailsViewModel
 
-class BadgesFragment(
-    private val badges: List<Badge>,
-    private val onPageReadyListener: IPageReadyListener
-) : Fragment() {
+class BadgesFragment : Fragment() {
     private var _binding: FragmentBadgesBinding? = null
-
     private val binding get() = _binding!!
-
-    private lateinit var adapter: BadgesAdapter
+    private val detailsViewModel: PlayerDetailsViewModel by viewModels({ requireParentFragment() })
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentBadgesBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-        lifecycleScope.launch(Dispatchers.IO) {
-            adapter = BadgesAdapter()
-            adapter.badgeCollection = badges
-
-            withContext(Dispatchers.Main) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        detailsViewModel.details.observe(viewLifecycleOwner) { details ->
+            if (details != null) {
                 binding.badgesRecyclerView.layoutManager = LinearLayoutManager(context)
-                binding.badgesRecyclerView.adapter = adapter
-
-                onPageReadyListener.onPageLoad()
+                binding.badgesRecyclerView.adapter = BadgesAdapter().apply {
+                    badgeCollection = details.badges
+                }
             }
         }
+    }
 
-        return binding.root
+    override fun onDestroyView() {
+        binding.badgesRecyclerView.adapter = null
+        super.onDestroyView()
+        _binding = null
     }
 }

@@ -31,7 +31,7 @@ class SearchResultViewHolder(private val binding: ItemSearchPlayerBinding) : Rec
     }
 
     fun bind(searchPlayerResult: SearchPlayerResult, playerDetailsListener: IPlayerDetailsListener) {
-        itemView.transitionName = searchPlayerResult.url
+        itemView.transitionName = "search_player_${searchPlayerResult.url}"
 
         with(binding) {
             name.text = searchPlayerResult.name

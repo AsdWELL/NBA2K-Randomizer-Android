@@ -7,7 +7,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.nbarandomizer.databinding.ItemGameBinding
 import com.example.nbarandomizer.models.Game
 
-class HistoryViewHolder(private val binding: ItemGameBinding) : RecyclerView.ViewHolder(binding.root) {
+class HistoryViewHolder(
+    private val binding: ItemGameBinding,
+    private val sharedRecycledPool: RecyclerView.RecycledViewPool
+) : RecyclerView.ViewHolder(binding.root) {
     private val singleGameAdapter = SingleGameAdapter()
 
     private val gridLayoutManager = GridLayoutManager(itemView.context, 1).apply {
@@ -22,7 +25,7 @@ class HistoryViewHolder(private val binding: ItemGameBinding) : RecyclerView.Vie
     private fun setupRecyclerView() {
         with(binding.gamesRecyclerView) {
             itemAnimator = null
-            setRecycledViewPool(HistoryAdapter.sharedPool)
+            setRecycledViewPool(sharedRecycledPool)
             layoutManager = gridLayoutManager
             adapter = singleGameAdapter
         }
@@ -39,17 +42,15 @@ class HistoryViewHolder(private val binding: ItemGameBinding) : RecyclerView.Vie
 class HistoryAdapter : RecyclerView.Adapter<HistoryViewHolder>() {
     lateinit var games: List<Game>
 
-    companion object {
-        val sharedPool = RecyclerView.RecycledViewPool().apply {
-            setMaxRecycledViews(0, 100)
-        }
+    private val sharedPool = RecyclerView.RecycledViewPool().apply {
+        setMaxRecycledViews(0, 100)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val binding = ItemGameBinding.inflate(inflater, parent, false)
 
-        return HistoryViewHolder(binding)
+        return HistoryViewHolder(binding, sharedPool)
     }
 
     override fun getItemCount(): Int {

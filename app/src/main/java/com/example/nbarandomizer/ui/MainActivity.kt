@@ -22,6 +22,7 @@ import com.example.nbarandomizer.models.Version2K
 import com.example.nbarandomizer.services.PlayersService
 import com.example.nbarandomizer.ui.search.SearchFragment
 import com.example.nbarandomizer.viewModels.SharedViewModel
+import com.example.nbarandomizer.viewModels.RandomizerViewModel
 import com.example.nbarandomizer.viewModels.UiState
 import com.google.android.material.tabs.TabLayoutMediator
 import java.io.File
@@ -63,7 +64,13 @@ class MainActivity : AppCompatActivity() {
 
         setSearchListener()
 
-        playersService.notifyProgressBar = { binding.progressBar.progress++ }
+        playersService.notifyProgressBar = sharedViewModel::onDetailsDownloaded
+
+        val randomizerViewModel = ViewModelProvider(this)[RandomizerViewModel::class.java]
+        sharedViewModel.selectedRosterBinding.observe(this) {
+            randomizerViewModel.onRosterChanged(it, sharedViewModel.rosterRevision)
+        }
+        sharedViewModel.detailsProgress.observe(this) { binding.progressBar.progress = it }
 
         getNicknames()
 
@@ -215,7 +222,6 @@ class MainActivity : AppCompatActivity() {
 
                     setStatusText("Загрузка атрибутов игроков...")
                     binding.progressBar.show()
-                    binding.progressBar.progress = 0
                 }
 
                 is UiState.SuccessDetails -> {
@@ -248,7 +254,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        sharedViewModel.stopDownloadingJob()
+        downloadingAnimator.cancel()
+        if (!isChangingConfigurations) playersService.notifyProgressBar = null
 
         super.onDestroy()
     }

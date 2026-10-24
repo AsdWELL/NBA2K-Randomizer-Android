@@ -2,8 +2,6 @@ package com.example.nbarandomizer.ui.search
 
 import android.content.Context
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.transition.TransitionSet
 import android.view.LayoutInflater
 import android.view.View
@@ -11,9 +9,11 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.transition.doOnEnd
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.nbarandomizer.App
 import com.example.nbarandomizer.R
 import com.example.nbarandomizer.adapters.SearchResultsAdapter
@@ -22,150 +22,87 @@ import com.example.nbarandomizer.extensions.createEnterTransformation
 import com.example.nbarandomizer.extensions.createReturnTransformation
 import com.example.nbarandomizer.listeners.IPlayerDetailsListener
 import com.example.nbarandomizer.models.IPlayerBase
-import com.example.nbarandomizer.services.PlayersService
 import com.example.nbarandomizer.ui.playerDetails.PlayerDetailsFragment
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-
+import com.example.nbarandomizer.viewModels.SearchViewModel
 
 class SearchFragment : Fragment(), IPlayerDetailsListener {
     private var _binding: FragmentSearchBinding? = null
-
     private val binding get() = _binding!!
-
-    private val playersService: PlayersService
-        get() = (requireActivity().applicationContext as App).playersService
-
+    private val searchViewModel: SearchViewModel by viewModels()
     private lateinit var adapter: SearchResultsAdapter
 
-    private fun toastMessage(msg: String) {
-        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-    }
-
-    private fun hideKeyboard() {
-        binding.searchView.clearFocus()
-
-        val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE)
-                as? InputMethodManager
-                ?: return
-
-        imm.hideSoftInputFromWindow(binding.searchView.windowToken, 0)
-    }
-
-    private fun showKeyboard() {
-        binding.searchView.requestFocus()
-
-        val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE)
-                as InputMethodManager?
-                ?: return
-
-        imm.showSoftInput(binding.searchView, InputMethodManager.SHOW_IMPLICIT)
-    }
-
-    private fun fragmentManagerBackStack() {
-        requireActivity().supportFragmentManager.popBackStack()
-    }
-
-    private fun bindSearchViewToRecyclerView() {
-        binding.searchView.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun afterTextChanged(s: Editable?) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    try {
-                        val searchResults = playersService.searchPlayers(s.toString())
-
-                        withContext(Dispatchers.Main) {
-                            adapter.submitList(searchResults)
-                        }
-                    }
-                    catch (ex: Exception) {
-                        withContext(Dispatchers.Main) {
-                            toastMessage(ex.message ?: "Отсутствует подключение к интернету")
-                        }
-                    }
-                }
-            }
-        })
-    }
-
-    private fun initializeSearchRecyclerView() {
-        adapter = SearchResultsAdapter(this)
-
-        with(binding.recyclerView) {
-            layoutManager = LinearLayoutManager(context)
-            adapter = this@SearchFragment.adapter
-        }
-    }
-
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentSearchBinding.inflate(inflater, container, false)
-
-        binding.root.setOnClickListener {}
-
-        binding.backBtn.setOnClickListener { fragmentManagerBackStack() }
-
-        initializeSearchRecyclerView()
-        bindSearchViewToRecyclerView()
-
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.root.setOnClickListener {}
+        binding.backBtn.setOnClickListener { parentFragmentManager.popBackStack() }
+        adapter = SearchResultsAdapter(this)
+        adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
+        binding.recyclerView.layoutManager = LinearLayoutManager(context)
+        binding.recyclerView.adapter = adapter
+
+        val service = (requireActivity().application as App).playersService
+        binding.searchView.setText(searchViewModel.query)
+        binding.searchView.doAfterTextChanged {
+            searchViewModel.search(it?.toString().orEmpty(), service::searchPlayers)
+        }
+        searchViewModel.results.observe(viewLifecycleOwner) { adapter.submitList(it) }
+        searchViewModel.error.observe(viewLifecycleOwner) { message ->
+            if (message != null) {
+                searchViewModel.consumeError()
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            }
+        }
+        searchViewModel.search(searchViewModel.query, service::searchPlayers)
 
         val searchBar = requireActivity().findViewById<View>(R.id.search_bar)
-
-        enterTransition = TransitionSet().apply {
-            ordering = TransitionSet.ORDERING_TOGETHER
-            addTransition(createEnterTransformation(searchBar, binding.root))
-            addTransition(createEnterTransformation(searchBar, binding.searchView))
-            doOnEnd { showKeyboard() }
-        }
-
-        returnTransition = TransitionSet().apply {
-            ordering = TransitionSet.ORDERING_TOGETHER
-            addTransition(createReturnTransformation(binding.root, searchBar))
-            addTransition(createReturnTransformation(binding.searchView, searchBar))
+        if (searchBar != null) {
+            enterTransition = TransitionSet().apply {
+                ordering = TransitionSet.ORDERING_TOGETHER
+                addTransition(createEnterTransformation(searchBar, binding.root))
+                addTransition(createEnterTransformation(searchBar, binding.searchView))
+                doOnEnd { showKeyboard() }
+            }
+            returnTransition = TransitionSet().apply {
+                ordering = TransitionSet.ORDERING_TOGETHER
+                addTransition(createReturnTransformation(binding.root, searchBar))
+                addTransition(createReturnTransformation(binding.searchView, searchBar))
+            }
         }
     }
 
+    private fun showKeyboard() {
+        val searchView = _binding?.searchView ?: return
+        if (!isAdded) return
+        searchView.requestFocus()
+        val keyboard = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        keyboard?.showSoftInput(searchView, InputMethodManager.SHOW_IMPLICIT)
+    }
+
     override fun showPlayerDetails(player: IPlayerBase, playerCard: View) {
-        hideKeyboard()
+        binding.searchView.clearFocus()
+        val keyboard = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        keyboard?.hideSoftInputFromWindow(binding.searchView.windowToken, 0)
 
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val playerDetailsFragment = PlayerDetailsFragment(player, playerCard)
+        parentFragmentManager.beginTransaction()
+            .add(
+                R.id.container,
+                PlayerDetailsFragment.newInstance(player, playerCard.transitionName),
+                PlayerDetailsFragment.TAG
+            )
+            .addToBackStack(PlayerDetailsFragment.TAG)
+            .commit()
+    }
 
-                withContext(Dispatchers.Main) {
-                    requireActivity().supportFragmentManager
-                        .beginTransaction()
-                        .add(R.id.container, playerDetailsFragment, PlayerDetailsFragment.TAG)
-                        .addToBackStack(PlayerDetailsFragment.TAG)
-                        .commit()
-                }
-
-                val details = playersService.downloadLatest2KVersionPlayerDetails(player)
-
-                withContext(Dispatchers.Main) {
-                    playerDetailsFragment.playerDetails = details
-                }
-            }
-            catch(ex: Exception) {
-                withContext(Dispatchers.Main) {
-                    if (ex.message != null)
-                        toastMessage(ex.message!!)
-
-                    if (requireActivity().supportFragmentManager.fragments.last()
-                        .tag?.equals(PlayerDetailsFragment.TAG) == true)
-                        fragmentManagerBackStack()
-                }
-            }
-        }
+    override fun onDestroyView() {
+        binding.recyclerView.adapter = null
+        super.onDestroyView()
+        _binding = null
     }
 }

@@ -5,8 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.nbarandomizer.R
 import com.example.nbarandomizer.adapters.HistoryAdapter
@@ -16,10 +15,7 @@ import com.example.nbarandomizer.extensions.createReturnTransformation
 import com.example.nbarandomizer.extensions.gone
 import com.example.nbarandomizer.extensions.hide
 import com.example.nbarandomizer.extensions.show
-import com.example.nbarandomizer.viewModels.SharedViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.example.nbarandomizer.viewModels.RandomizerViewModel
 
 class HistoryFragment : Fragment() {
     companion object {
@@ -30,9 +26,9 @@ class HistoryFragment : Fragment() {
 
     private val binding get() = _binding!!
 
-    private lateinit var sharedViewModel: SharedViewModel
+    private val randomizerViewModel: RandomizerViewModel by activityViewModels()
 
-    private val history get() = sharedViewModel.history
+    private val history get() = randomizerViewModel.history
 
     private lateinit var adapter: HistoryAdapter
 
@@ -54,18 +50,12 @@ class HistoryFragment : Fragment() {
             return
         }
 
-        binding.progressBar.show()
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            adapter = HistoryAdapter()
-            adapter.games = sharedViewModel.history.games
-
-            binding.recyclerView.layoutManager = LinearLayoutManager(context)
-
-            withContext(Dispatchers.Main) {
-                binding.recyclerView.adapter = adapter
-            }
-        }
+        adapter = HistoryAdapter()
+        adapter.games = history.games
+        binding.recyclerView.layoutManager = LinearLayoutManager(context)
+        binding.recyclerView.adapter = adapter
+        binding.progressBar.gone()
+        binding.recyclerView.show()
     }
 
     override fun onCreateView(
@@ -73,8 +63,6 @@ class HistoryFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHistoryBinding.inflate(inflater, container, false)
-
-        sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
 
         binding.root.setOnClickListener {}
         binding.backBtn.setOnClickListener { requireActivity().supportFragmentManager.popBackStack() }
@@ -89,14 +77,19 @@ class HistoryFragment : Fragment() {
 
         val historyCard = requireActivity().findViewById<View>(R.id.history_card)
 
-        enterTransition = createEnterTransformation(historyCard, binding.historyContainer) {
-            historyCard.hide()
-            binding.progressBar.gone()
-            binding.recyclerView.show()
+        if (historyCard != null) {
+            enterTransition = createEnterTransformation(historyCard, binding.historyContainer) {
+                historyCard.hide()
+            }
+            returnTransition = createReturnTransformation(binding.historyContainer, historyCard) {
+                historyCard.show()
+            }
         }
+    }
 
-        returnTransition = createReturnTransformation(binding.historyContainer, historyCard) {
-            historyCard.show()
-        }
+    override fun onDestroyView() {
+        binding.recyclerView.adapter = null
+        super.onDestroyView()
+        _binding = null
     }
 }
