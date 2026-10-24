@@ -202,8 +202,6 @@ class RandomizerFragment : Fragment() {
     }
 
     private fun reset() {
-        binding.positionsChips.clearCheck()
-        binding.playersCountSeekBar.progress = 0
         shuffledPlayers.value = mutableListOf()
         history.clear()
     }
