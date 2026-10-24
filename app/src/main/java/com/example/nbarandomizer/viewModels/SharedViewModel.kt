@@ -44,7 +44,7 @@ class SharedViewModel : ViewModel() {
     var epoch = Epoch.Current
         private set
 
-    var version: Version2K = Version2K._2K25
+    var version: Version2K = Version2K._2K27
         private set
 
     private val _filterSettingsBinding = MutableLiveData(FilterSettings())
