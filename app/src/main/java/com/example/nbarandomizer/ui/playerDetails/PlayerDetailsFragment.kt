@@ -5,7 +5,6 @@ import android.transition.TransitionSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.cardview.widget.CardView
 import androidx.core.os.bundleOf
 import androidx.core.view.doOnPreDraw
 import androidx.core.widget.doAfterTextChanged
@@ -26,7 +25,7 @@ import com.example.nbarandomizer.extensions.show
 import com.example.nbarandomizer.models.IPlayerBase
 import com.example.nbarandomizer.models.PlayerDetails
 import com.example.nbarandomizer.models.SearchPlayerResult
-import com.example.nbarandomizer.ui.providers.CardOutlineProvider
+import com.example.nbarandomizer.ui.components.RatingView
 import com.example.nbarandomizer.viewModels.PlayerDetailsViewModel
 import com.example.nbarandomizer.viewModels.SharedViewModel
 import com.google.android.material.tabs.TabLayoutMediator
@@ -43,7 +42,8 @@ class PlayerDetailsFragment : Fragment() {
         fun newInstance(
             player: IPlayerBase,
             transitionName: String?,
-            details: PlayerDetails? = null
+            details: PlayerDetails? = null,
+            nicknameEditable: Boolean = true
         ) = PlayerDetailsFragment().apply {
             val preview = SearchPlayerResult(
                 player.id, player.name, player.team, player.overall, player.url, player.photoUrl
@@ -52,6 +52,7 @@ class PlayerDetailsFragment : Fragment() {
                 PlayerDetailsViewModel.ARG_PLAYER to Json.encodeToString(preview),
                 PlayerDetailsViewModel.ARG_DETAILS to details?.let { Json.encodeToString(it) },
                 PlayerDetailsViewModel.ARG_NICKNAME to details?.nickname,
+                PlayerDetailsViewModel.ARG_NICKNAME_EDITABLE to nicknameEditable,
                 ARG_TRANSITION_NAME to transitionName
             )
         }
@@ -63,13 +64,7 @@ class PlayerDetailsFragment : Fragment() {
     private val detailsViewModel: PlayerDetailsViewModel by viewModels()
     private var tabMediator: TabLayoutMediator? = null
     private var enterFinished = false
-
-    private fun setupCard(card: CardView) {
-        card.cardElevation = 5f
-        card.preventCornerOverlap = false
-        card.clipToOutline = false
-        card.outlineProvider = CardOutlineProvider(card)
-    }
+    private val readyPages = mutableSetOf<Class<out Fragment>>()
 
     private fun setMainInfo() {
         val player = detailsViewModel.player
@@ -84,16 +79,14 @@ class PlayerDetailsFragment : Fragment() {
             name.text = player.name
             smallName.text = detailsViewModel.nicknameDraft.ifBlank { player.name }
             team.text = "Team: ${player.team}"
-            overallTextView.text = player.overall.value.toString()
-            setupCard(overallCardView)
-            overallCardView.setCardBackgroundColor(player.overall.color)
-            overallCardView.outlineSpotShadowColor = player.overall.color
+            RatingView(overallCardView, overallTextView).bind(player.overall)
         }
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
+        readyPages.clear()
         _binding = FragmentPlayerDetailsBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -103,6 +96,7 @@ class PlayerDetailsFragment : Fragment() {
         postponeEnterTransition()
         enterFinished = savedInstanceState != null
         setMainInfo()
+        if (!detailsViewModel.nicknameEditable) binding.nickname.gone()
         binding.nickname.setText(detailsViewModel.nicknameDraft)
         binding.nickname.doAfterTextChanged {
             detailsViewModel.nicknameDraft = it?.toString().orEmpty()
@@ -123,7 +117,7 @@ class PlayerDetailsFragment : Fragment() {
                 binding.nickname.gone()
                 return@observe
             }
-            binding.nickname.show()
+            if (detailsViewModel.nicknameEditable) binding.nickname.show()
             if (binding.nickname.text.toString() != detailsViewModel.nicknameDraft) {
                 binding.nickname.setText(detailsViewModel.nicknameDraft)
             }
@@ -138,7 +132,6 @@ class PlayerDetailsFragment : Fragment() {
                     tab.text = if (position == 0) "Attributes" else "Badges"
                 }.also { it.attach() }
             }
-            binding.progressBar.gone()
             if (enterFinished) binding.viewPager.show()
         }
         detailsViewModel.error.observe(viewLifecycleOwner) { message ->
@@ -156,6 +149,14 @@ class PlayerDetailsFragment : Fragment() {
 
         configureTransitions()
         view.doOnPreDraw { startPostponedEnterTransition() }
+    }
+
+    internal fun onPageReady(page: Fragment) {
+        val binding = _binding ?: return
+        readyPages.add(page.javaClass)
+        if (readyPages.size == binding.viewPager.adapter?.itemCount) {
+            binding.progressBar.gone()
+        }
     }
 
     private fun configureTransitions() {
@@ -190,6 +191,7 @@ class PlayerDetailsFragment : Fragment() {
     }
 
     private fun saveNickname() {
+        if (!detailsViewModel.nicknameEditable) return
         val details = detailsViewModel.details.value ?: return
         val nickname = detailsViewModel.nicknameDraft.trim().ifEmpty { null }
         if (details.nickname != nickname) {
@@ -203,6 +205,7 @@ class PlayerDetailsFragment : Fragment() {
         tabMediator?.detach()
         tabMediator = null
         binding.viewPager.adapter = null
+        readyPages.clear()
         super.onDestroyView()
         _binding = null
     }

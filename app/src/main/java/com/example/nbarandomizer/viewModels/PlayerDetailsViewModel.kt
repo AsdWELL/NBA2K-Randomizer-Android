@@ -20,12 +20,14 @@ class PlayerDetailsViewModel(private val savedState: SavedStateHandle) : ViewMod
         const val ARG_PLAYER = "player"
         const val ARG_DETAILS = "details"
         const val ARG_NICKNAME = "nickname"
+        const val ARG_NICKNAME_EDITABLE = "nicknameEditable"
         private const val NICKNAME_DRAFT = "nicknameDraft"
     }
 
     val player: IPlayerBase = Json.decodeFromString<SearchPlayerResult>(
         checkNotNull(savedState[ARG_PLAYER]) { "Player argument is required" }
     )
+    val nicknameEditable: Boolean = savedState[ARG_NICKNAME_EDITABLE] ?: true
 
     private val _details = MutableLiveData(
         savedState.get<String>(ARG_DETAILS)?.let { Json.decodeFromString<PlayerDetails>(it) }

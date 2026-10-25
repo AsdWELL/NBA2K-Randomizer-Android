@@ -16,12 +16,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nbarandomizer.App
 import com.example.nbarandomizer.R
-import com.example.nbarandomizer.adapters.SearchResultsAdapter
+import com.example.nbarandomizer.adapters.PlayerRowAdapter
 import com.example.nbarandomizer.databinding.FragmentSearchBinding
 import com.example.nbarandomizer.extensions.createEnterTransformation
 import com.example.nbarandomizer.extensions.createReturnTransformation
 import com.example.nbarandomizer.listeners.IPlayerDetailsListener
 import com.example.nbarandomizer.models.IPlayerBase
+import com.example.nbarandomizer.models.SearchPlayerResult
 import com.example.nbarandomizer.ui.playerDetails.PlayerDetailsFragment
 import com.example.nbarandomizer.viewModels.SearchViewModel
 
@@ -29,7 +30,7 @@ class SearchFragment : Fragment(), IPlayerDetailsListener {
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
     private val searchViewModel: SearchViewModel by viewModels()
-    private lateinit var adapter: SearchResultsAdapter
+    private lateinit var adapter: PlayerRowAdapter<SearchPlayerResult>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -42,7 +43,7 @@ class SearchFragment : Fragment(), IPlayerDetailsListener {
         super.onViewCreated(view, savedInstanceState)
         binding.root.setOnClickListener {}
         binding.backBtn.setOnClickListener { parentFragmentManager.popBackStack() }
-        adapter = SearchResultsAdapter(this)
+        adapter = PlayerRowAdapter.search(this)
         adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
         binding.recyclerView.adapter = adapter
@@ -53,6 +54,9 @@ class SearchFragment : Fragment(), IPlayerDetailsListener {
             searchViewModel.search(it?.toString().orEmpty(), service::searchPlayers)
         }
         searchViewModel.results.observe(viewLifecycleOwner) { adapter.submitList(it) }
+        searchViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        }
         searchViewModel.error.observe(viewLifecycleOwner) { message ->
             if (message != null) {
                 searchViewModel.consumeError()
@@ -93,7 +97,9 @@ class SearchFragment : Fragment(), IPlayerDetailsListener {
         parentFragmentManager.beginTransaction()
             .add(
                 R.id.container,
-                PlayerDetailsFragment.newInstance(player, playerCard.transitionName),
+                PlayerDetailsFragment.newInstance(
+                    player, playerCard.transitionName, nicknameEditable = false
+                ),
                 PlayerDetailsFragment.TAG
             )
             .addToBackStack(PlayerDetailsFragment.TAG)

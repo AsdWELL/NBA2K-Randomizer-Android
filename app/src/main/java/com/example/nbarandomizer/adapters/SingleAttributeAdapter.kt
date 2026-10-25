@@ -2,35 +2,16 @@ package com.example.nbarandomizer.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nbarandomizer.databinding.ItemAttributeBinding
 import com.example.nbarandomizer.models.Rating
-import com.example.nbarandomizer.ui.providers.CardOutlineProvider
+import com.example.nbarandomizer.ui.components.RatingView
 
 class SingleAttributeViewHolder(private val binding: ItemAttributeBinding) : RecyclerView.ViewHolder(binding.root) {
-    init {
-        setupCard(binding.attributeCard)
-    }
-
-    private fun setupCard(card: CardView) {
-        card.cardElevation = 5f
-        card.preventCornerOverlap = false
-        card.clipToOutline = false
-        card.outlineProvider = CardOutlineProvider(card)
-    }
-
-    private fun setCardColor(card: CardView, color: Int) {
-        card.setCardBackgroundColor(color)
-        card.outlineSpotShadowColor = color
-    }
+    private val ratingView = RatingView(binding.attributeCard, binding.attributeValue, binding.attributeName)
 
     fun bind(rating: Rating) {
-        with(binding) {
-            setCardColor(attributeCard, rating.color)
-            attributeValue.text = rating.value.toString()
-            attributeName.text = rating.name
-        }
+        ratingView.bind(rating)
     }
 }
 

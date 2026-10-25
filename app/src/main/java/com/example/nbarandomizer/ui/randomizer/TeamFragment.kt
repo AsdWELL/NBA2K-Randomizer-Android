@@ -21,6 +21,7 @@ import com.example.nbarandomizer.extensions.show
 import com.example.nbarandomizer.listeners.IPlayerCardListener
 import com.example.nbarandomizer.models.IPlayerBase
 import com.example.nbarandomizer.ui.playerDetails.PlayerDetailsFragment
+import com.example.nbarandomizer.ui.models.TeamSlot
 import com.example.nbarandomizer.viewModels.SharedViewModel
 import com.example.nbarandomizer.viewModels.RandomizerViewModel
 
@@ -95,7 +96,9 @@ class TeamFragment : Fragment(), IPlayerCardListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        randomizerViewModel.currentTeam.observe(viewLifecycleOwner) { adapter.submitList(it) }
+        randomizerViewModel.currentTeam.observe(viewLifecycleOwner) { players ->
+            adapter.submitList(players.mapIndexed { index, player -> TeamSlot(index, player) })
+        }
 
         view.doOnPreDraw {
             startPostponedEnterTransition()

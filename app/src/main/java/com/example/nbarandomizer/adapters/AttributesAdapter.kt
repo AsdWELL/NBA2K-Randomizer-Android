@@ -2,38 +2,21 @@ package com.example.nbarandomizer.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nbarandomizer.databinding.ItemPlayerAttributesBinding
 import com.example.nbarandomizer.models.AttributeRatings
-import com.example.nbarandomizer.ui.providers.CardOutlineProvider
+import com.example.nbarandomizer.ui.components.RatingView
 
 class AttributesViewHolder(private val binding: ItemPlayerAttributesBinding) : RecyclerView.ViewHolder(binding.root) {
-    init {
-        setupCard(binding.attributeCard)
-    }
-
-    private fun setupCard(card: CardView) {
-        card.cardElevation = 5f
-        card.preventCornerOverlap = false
-        card.clipToOutline = false
-        card.outlineProvider = CardOutlineProvider(card)
-    }
-
-    private fun setCardColor(card: CardView, color: Int) {
-        card.setCardBackgroundColor(color)
-        card.outlineSpotShadowColor = color
-    }
+    private val ratingView = RatingView(binding.attributeCard, binding.attributeValue, binding.attributeName)
 
     fun bind(attributeRatings: AttributeRatings) {
         val singleAttributeAdapter = SingleAttributeAdapter()
         singleAttributeAdapter.ratingsCollection = attributeRatings.parameters
 
         with(binding) {
-            setCardColor(attributeCard, attributeRatings.rating.color)
-            attributeValue.text = attributeRatings.rating.value.toString()
-            attributeName.text = attributeRatings.rating.name
+            ratingView.bind(attributeRatings.rating)
 
             singleAttributeRecyclerView.layoutManager = LinearLayoutManager(itemView.context)
             singleAttributeRecyclerView.adapter = singleAttributeAdapter

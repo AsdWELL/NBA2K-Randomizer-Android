@@ -11,7 +11,7 @@ class HistoryViewHolder(
     private val binding: ItemGameBinding,
     private val sharedRecycledPool: RecyclerView.RecycledViewPool
 ) : RecyclerView.ViewHolder(binding.root) {
-    private val singleGameAdapter = SingleGameAdapter()
+    private val singleGameAdapter = PlayerRowAdapter.history()
 
     private val gridLayoutManager = GridLayoutManager(itemView.context, 1).apply {
         isItemPrefetchEnabled = true

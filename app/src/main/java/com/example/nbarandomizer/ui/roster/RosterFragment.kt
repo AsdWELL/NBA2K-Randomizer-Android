@@ -10,11 +10,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nbarandomizer.R
-import com.example.nbarandomizer.adapters.PlayerAdapter
+import com.example.nbarandomizer.adapters.PlayerRowAdapter
 import com.example.nbarandomizer.databinding.FragmentRosterBinding
 import com.example.nbarandomizer.extensions.applyFilterSettingsAndSort
 import com.example.nbarandomizer.listeners.IPlayerDetailsListener
 import com.example.nbarandomizer.models.IPlayerBase
+import com.example.nbarandomizer.models.Player
 import com.example.nbarandomizer.models.FilterSettings
 import com.example.nbarandomizer.ui.playerDetails.PlayerDetailsFragment
 import com.example.nbarandomizer.viewModels.SharedViewModel
@@ -26,7 +27,7 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
 
     private lateinit var sharedViewModel: SharedViewModel
 
-    private lateinit var adapter: PlayerAdapter
+    private lateinit var adapter: PlayerRowAdapter<Player>
     private var lastFilterSettings: FilterSettings? = null
 
     private fun toastMessage(msg: String) {
@@ -63,7 +64,7 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
 
         sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
 
-        adapter = PlayerAdapter(this)
+        adapter = PlayerRowAdapter.roster(this)
 
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
         binding.recyclerView.adapter = adapter

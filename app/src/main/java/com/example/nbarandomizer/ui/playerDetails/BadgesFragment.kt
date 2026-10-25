@@ -31,6 +31,7 @@ class BadgesFragment : Fragment() {
                 binding.badgesRecyclerView.adapter = BadgesAdapter().apply {
                     badgeCollection = details.badges
                 }
+                (requireParentFragment() as PlayerDetailsFragment).onPageReady(this)
             }
         }
     }

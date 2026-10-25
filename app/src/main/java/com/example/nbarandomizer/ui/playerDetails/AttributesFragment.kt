@@ -31,6 +31,7 @@ class AttributesFragment : Fragment() {
                 binding.attributesRecyclerView.adapter = AttributesAdapter().apply {
                     attributesCollections = details.attributes
                 }
+                (requireParentFragment() as PlayerDetailsFragment).onPageReady(this)
             }
         }
     }

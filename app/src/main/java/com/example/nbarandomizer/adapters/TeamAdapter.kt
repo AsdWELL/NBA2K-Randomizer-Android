@@ -2,84 +2,24 @@ package com.example.nbarandomizer.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.signature.ObjectKey
-import com.example.nbarandomizer.callbacks.PlayerDiffCallback
+import com.example.nbarandomizer.adapters.viewholders.TeamViewHolder
+import com.example.nbarandomizer.callbacks.TeamSlotDiffCallback
 import com.example.nbarandomizer.databinding.PlayerCardBinding
 import com.example.nbarandomizer.listeners.IPlayerCardListener
-import com.example.nbarandomizer.models.Player
-import com.example.nbarandomizer.ui.providers.CardOutlineProvider
+import com.example.nbarandomizer.ui.models.TeamSlot
 
-class TeamViewHolder(private val binding: PlayerCardBinding) : RecyclerView.ViewHolder(binding.root) {
-    init {
-        setupCard(binding.overallCardView)
-        setupCard(binding.threePtCardView)
-        setupCard(binding.dunkCardView)
-    }
+class TeamAdapter(private val listener: IPlayerCardListener) : ListAdapter<TeamSlot, TeamViewHolder>(TeamSlotDiffCallback()) {
+    init { setHasStableIds(true) }
 
-    var isAnimating = false
+    override fun getItemId(position: Int) = getItem(position).index.toLong()
 
-    private fun setupCard(card: CardView) {
-        card.cardElevation = 5f
-        card.preventCornerOverlap = false
-        card.clipToOutline = false
-        card.outlineProvider = CardOutlineProvider(card)
-    }
-
-    private fun setCardColor(card: CardView, color: Int) {
-        card.setCardBackgroundColor(color)
-        card.outlineSpotShadowColor = color
-    }
-
-    fun bind(player: Player, playerCardListener: IPlayerCardListener) {
-        with(binding) {
-            itemView.id = player.id
-            itemView.transitionName = "team_player_${player.id}"
-
-            name.text = player.playerName
-            details.text = "${player.position} | ${player.height}cm | ${player.team}"
-            overallTextView.text = player.overall.value.toString()
-            threePtTextView.text = player.threePointRating.value.toString()
-            dunkTextView.text = player.dunkRating.value.toString()
-
-            setCardColor(overallCardView, player.overall.color)
-            setCardColor(threePtCardView, player.threePointRating.color)
-            setCardColor(dunkCardView, player.dunkRating.color)
-
-            Glide.with(binding.root)
-                .load(player.photoUrl)
-                .signature(ObjectKey("${player.team}_${player.photoUrl}"))
-                .circleCrop()
-                .into(photo)
-
-            refreshBtn.setOnClickListener {
-                if (isAnimating)
-                    return@setOnClickListener
-
-                playerCardListener.onPlayerCardClick(adapterPosition)
-            }
-
-            itemView.setOnLongClickListener {
-                playerCardListener.showPlayerDetails(player, it)
-                true
-            }
-        }
-    }
-}
-
-class TeamAdapter(private val playerCardListener: IPlayerCardListener)
-    : ListAdapter<Player, TeamViewHolder>(PlayerDiffCallback()) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TeamViewHolder {
-        val inflater = LayoutInflater.from(parent.context)
-        val binding = PlayerCardBinding.inflate(inflater, parent, false)
-
+        val binding = PlayerCardBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return TeamViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: TeamViewHolder, position: Int) {
-        holder.bind(currentList[position], playerCardListener)
+        holder.bind(getItem(position), listener)
     }
 }

@@ -8,7 +8,7 @@ class SearchPlayerResultsDiffCallback : DiffUtil.ItemCallback<SearchPlayerResult
         oldItem: SearchPlayerResult,
         newItem: SearchPlayerResult
     ): Boolean {
-        return oldItem === newItem
+        return oldItem.url == newItem.url
     }
 
     override fun areContentsTheSame(
