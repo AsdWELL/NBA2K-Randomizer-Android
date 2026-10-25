@@ -163,7 +163,7 @@
                 android:contentDescription="@string/navigation_randomizer"
                 android:padding="12dp"
                 android:tooltipText="@string/navigation_randomizer"
-                app:srcCompat="@drawable/casino_24px"
+                app:srcCompat="@drawable/dices_24px"
                 android:defaultFocusHighlightEnabled="false"
                 app:tint="@color/bottom_navigation_icon_tint" />
 
@@ -175,7 +175,7 @@
                 android:contentDescription="@string/navigation_roster"
                 android:padding="12dp"
                 android:tooltipText="@string/navigation_roster"
-                app:srcCompat="@drawable/groups_24px"
+                app:srcCompat="@drawable/sports_basketball_24px"
                 android:defaultFocusHighlightEnabled="false"
                 app:tint="@color/bottom_navigation_icon_tint" />
 
