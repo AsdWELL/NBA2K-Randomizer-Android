@@ -6,6 +6,7 @@ import android.transition.TransitionSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.transition.doOnEnd
@@ -20,6 +21,7 @@ import com.example.nbarandomizer.adapters.PlayerRowAdapter
 import com.example.nbarandomizer.databinding.FragmentSearchBinding
 import com.example.nbarandomizer.extensions.createEnterTransformation
 import com.example.nbarandomizer.extensions.createReturnTransformation
+import com.example.nbarandomizer.extensions.submitOnEnter
 import com.example.nbarandomizer.listeners.IPlayerDetailsListener
 import com.example.nbarandomizer.models.IPlayerBase
 import com.example.nbarandomizer.models.SearchPlayerResult
@@ -53,6 +55,7 @@ class SearchFragment : Fragment(), IPlayerDetailsListener {
         binding.searchView.doAfterTextChanged {
             searchViewModel.search(it?.toString().orEmpty(), service::searchPlayers)
         }
+        binding.searchView.submitOnEnter(EditorInfo.IME_ACTION_SEARCH)
         searchViewModel.results.observe(viewLifecycleOwner) { adapter.submitList(it) }
         searchViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE

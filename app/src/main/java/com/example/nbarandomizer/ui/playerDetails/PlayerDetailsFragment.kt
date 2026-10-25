@@ -5,6 +5,7 @@ import android.transition.TransitionSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import androidx.core.os.bundleOf
 import androidx.core.view.doOnPreDraw
 import androidx.core.widget.doAfterTextChanged
@@ -22,6 +23,7 @@ import com.example.nbarandomizer.extensions.createReturnTransformation
 import com.example.nbarandomizer.extensions.findByTransitionName
 import com.example.nbarandomizer.extensions.gone
 import com.example.nbarandomizer.extensions.show
+import com.example.nbarandomizer.extensions.submitOnEnter
 import com.example.nbarandomizer.models.IPlayerBase
 import com.example.nbarandomizer.models.PlayerDetails
 import com.example.nbarandomizer.models.SearchPlayerResult
@@ -102,6 +104,7 @@ class PlayerDetailsFragment : Fragment() {
             detailsViewModel.nicknameDraft = it?.toString().orEmpty()
             binding.smallName.text = detailsViewModel.nicknameDraft.ifBlank { detailsViewModel.player.name }
         }
+        binding.nickname.submitOnEnter(EditorInfo.IME_ACTION_DONE)
         binding.backBtn.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }

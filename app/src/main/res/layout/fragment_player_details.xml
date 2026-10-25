@@ -65,6 +65,9 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/nickname"
                     android:hint="Кликуха игрока"
+                    android:inputType="text"
+                    android:singleLine="true"
+                    android:imeOptions="actionDone"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="10dp"

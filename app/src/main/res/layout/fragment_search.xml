@@ -35,13 +35,15 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:textSize="18sp"
             app:endIconMode="clear_text"
-            android:singleLine="true"
             app:hintEnabled="false"
             android:layout_marginTop="5dp">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/search_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:inputType="text"
+                android:singleLine="true"
+                android:imeOptions="actionSearch"
                 android:hint="@string/search_label"/>
         </com.google.android.material.textfield.TextInputLayout>
 
