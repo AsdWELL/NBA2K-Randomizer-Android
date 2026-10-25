@@ -8,37 +8,7 @@
     android:foreground="?attr/selectableItemBackgroundBorderless"
     android:paddingTop="10dp">
 
-    <com.google.android.material.imageview.ShapeableImageView
-        android:id="@+id/photo"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_marginBottom="10dp"
-        android:background="@color/gray"
-        android:scaleType="centerCrop"
-        app:shapeAppearanceOverlay="@style/roundedImageView"
-        app:layout_constraintBottom_toBottomOf="@id/divider"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-
-    <TextView
-        android:id="@+id/name"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="10dp"
-        android:textSize="14sp"
-        android:textStyle="bold|italic"
-        app:layout_constraintEnd_toStartOf="@+id/overallCardView"
-        app:layout_constraintStart_toEndOf="@+id/photo"
-        app:layout_constraintTop_toTopOf="@+id/photo" />
-
-    <TextView
-        android:id="@+id/details"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textSize="12sp"
-        app:layout_constraintBottom_toBottomOf="@+id/photo"
-        app:layout_constraintEnd_toEndOf="@+id/name"
-        app:layout_constraintStart_toStartOf="@+id/name" />
+    <include layout="@layout/view_player_info_horizontal" />
 
     <com.google.android.material.divider.MaterialDivider
         android:id="@+id/divider"
@@ -47,46 +17,31 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
-    <androidx.cardview.widget.CardView
+    <com.example.nbarandomizer.ui.components.RatingView
         android:id="@+id/overallCardView"
         style="@style/ratingCard"
         android:tooltipText="Overall"
         android:layout_marginHorizontal="7dp"
         app:layout_constraintBottom_toBottomOf="@+id/photo"
         app:layout_constraintEnd_toStartOf="@+id/threePtCardView"
-        app:layout_constraintTop_toTopOf="@+id/photo">
-
-        <TextView
-            android:id="@+id/overallTextView"
-            style="@style/ratingText" />
-    </androidx.cardview.widget.CardView>
+        app:layout_constraintTop_toTopOf="@+id/photo" />
 
 
-    <androidx.cardview.widget.CardView
+    <com.example.nbarandomizer.ui.components.RatingView
         android:id="@+id/threePtCardView"
         style="@style/ratingCard"
         android:tooltipText="3pt"
         android:layout_marginHorizontal="7dp"
         app:layout_constraintBottom_toBottomOf="@+id/photo"
         app:layout_constraintEnd_toStartOf="@+id/dunkCardView"
-        app:layout_constraintTop_toTopOf="@+id/photo">
+        app:layout_constraintTop_toTopOf="@+id/photo" />
 
-        <TextView
-            android:id="@+id/threePtTextView"
-            style="@style/ratingText" />
-    </androidx.cardview.widget.CardView>
-
-    <androidx.cardview.widget.CardView
+    <com.example.nbarandomizer.ui.components.RatingView
         android:id="@+id/dunkCardView"
         style="@style/ratingCard"
         android:tooltipText="Driving dunk"
         android:layout_marginHorizontal="7dp"
         app:layout_constraintBottom_toBottomOf="@+id/photo"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/photo">
-
-        <TextView
-            android:id="@+id/dunkTextView"
-            style="@style/ratingText"/>
-    </androidx.cardview.widget.CardView>
+        app:layout_constraintTop_toTopOf="@+id/photo" />
 </androidx.constraintlayout.widget.ConstraintLayout>

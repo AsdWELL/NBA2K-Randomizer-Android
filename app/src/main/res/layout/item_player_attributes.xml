@@ -6,18 +6,13 @@
     android:layout_marginBottom="15dp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <androidx.cardview.widget.CardView
+    <com.example.nbarandomizer.ui.components.RatingView
         android:id="@+id/attributeCard"
         style="@style/ratingCard"
         android:layout_marginStart="10dp"
         android:layout_marginTop="10dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <TextView
-            android:id="@+id/attributeValue"
-            style="@style/ratingText"/>
-    </androidx.cardview.widget.CardView>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/attributeName"

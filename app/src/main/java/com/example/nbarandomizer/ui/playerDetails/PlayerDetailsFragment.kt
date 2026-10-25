@@ -27,7 +27,6 @@ import com.example.nbarandomizer.extensions.submitOnEnter
 import com.example.nbarandomizer.models.IPlayerBase
 import com.example.nbarandomizer.models.PlayerDetails
 import com.example.nbarandomizer.models.SearchPlayerResult
-import com.example.nbarandomizer.ui.components.RatingView
 import com.example.nbarandomizer.viewModels.PlayerDetailsViewModel
 import com.example.nbarandomizer.viewModels.SharedViewModel
 import com.google.android.material.tabs.TabLayoutMediator
@@ -81,7 +80,7 @@ class PlayerDetailsFragment : Fragment() {
             name.text = player.name
             smallName.text = detailsViewModel.nicknameDraft.ifBlank { player.name }
             team.text = "Team: ${player.team}"
-            RatingView(overallCardView, overallTextView).bind(player.overall)
+            overallCardView.bind(player.overall)
         }
     }
 

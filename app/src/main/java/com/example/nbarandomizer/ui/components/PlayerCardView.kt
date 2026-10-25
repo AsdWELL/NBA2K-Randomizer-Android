@@ -5,11 +5,11 @@ import com.example.nbarandomizer.models.Player
 
 class PlayerCardView(private val binding: PlayerCardBinding) {
     val root get() = binding.root
-    private val info = PlayerInfoView(binding.photo, binding.name, binding.details)
+    private val info = PlayerInfoView(binding.photo, binding.name.root, binding.details.root)
     private val ratings = PlayerRatingsView(
-        RatingView(binding.overallCardView, binding.overallTextView),
-        RatingView(binding.threePtCardView, binding.threePtTextView),
-        RatingView(binding.dunkCardView, binding.dunkTextView)
+        binding.overallCardView,
+        binding.threePtCardView,
+        binding.dunkCardView
     )
 
     fun bind(player: Player, displayName: String = player.playerName) {

@@ -4,6 +4,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.signature.ObjectKey
+import com.example.nbarandomizer.databinding.ViewPlayerInfoHorizontalBinding
 import com.example.nbarandomizer.models.IPlayerBase
 import com.example.nbarandomizer.models.Player
 import com.example.nbarandomizer.models.SearchPlayerResult
@@ -13,6 +14,8 @@ class PlayerInfoView(
     private val name: TextView,
     private val details: TextView
 ) {
+    constructor(binding: ViewPlayerInfoHorizontalBinding) : this(binding.photo, binding.name, binding.details)
+
     fun bind(player: Player, circleCrop: Boolean = false, displayName: String = player.playerName) {
         bind(player, displayName, "${player.position} | ${player.height}cm | ${player.team}", circleCrop)
     }

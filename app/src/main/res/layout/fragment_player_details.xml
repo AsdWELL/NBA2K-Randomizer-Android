@@ -123,19 +123,14 @@
                     app:layout_constraintTop_toBottomOf="@id/position"
                     app:layout_constraintBottom_toBottomOf="parent">
 
-                    <androidx.cardview.widget.CardView
+                    <com.example.nbarandomizer.ui.components.RatingView
                         android:id="@+id/overallCardView"
                         style="@style/ratingCard"
                         android:layout_marginStart="10dp"
                         android:layout_marginVertical="10dp"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent">
-
-                        <TextView
-                            android:id="@+id/overallTextView"
-                            style="@style/ratingText" />
-                    </androidx.cardview.widget.CardView>
+                        app:layout_constraintBottom_toBottomOf="parent" />
 
                     <TextView
                         android:id="@+id/overall"

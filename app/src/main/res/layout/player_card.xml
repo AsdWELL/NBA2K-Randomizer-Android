@@ -35,33 +35,28 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@android:drawable/ic_popup_sync" />
 
-    <TextView
+    <include
         android:id="@+id/name"
+        layout="@layout/view_player_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="10dp"
         android:layout_marginTop="10dp"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textAlignment="center"
-        android:textSize="14sp"
-        android:textStyle="bold|italic"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/photo_container" />
+        app:layout_constraintTop_toBottomOf="@id/photo_container" />
 
-    <TextView
+    <include
         android:id="@+id/details"
+        layout="@layout/view_player_description"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:textSize="12sp"
         android:layout_marginTop="10dp"
-        app:layout_constraintEnd_toEndOf="@+id/name"
-        app:layout_constraintStart_toStartOf="@+id/name"
-        app:layout_constraintTop_toBottomOf="@+id/name" />
+        app:layout_constraintEnd_toEndOf="@id/name"
+        app:layout_constraintStart_toStartOf="@id/name"
+        app:layout_constraintTop_toBottomOf="@id/name" />
 
-    <androidx.cardview.widget.CardView
+    <com.example.nbarandomizer.ui.components.RatingView
         android:id="@+id/overallCardView"
         style="@style/ratingCard"
         android:layout_marginHorizontal="10dp"
@@ -69,15 +64,10 @@
         app:layout_constraintBottom_toBottomOf="@+id/threePtCardView"
         app:layout_constraintEnd_toStartOf="@+id/threePtCardView"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/threePtCardView">
-
-        <TextView
-            android:id="@+id/overallTextView"
-            style="@style/ratingText" />
-    </androidx.cardview.widget.CardView>
+        app:layout_constraintTop_toTopOf="@+id/threePtCardView" />
 
 
-    <androidx.cardview.widget.CardView
+    <com.example.nbarandomizer.ui.components.RatingView
         android:id="@+id/threePtCardView"
         style="@style/ratingCard"
         android:layout_marginHorizontal="10dp"
@@ -86,14 +76,9 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/details">
+        app:layout_constraintTop_toBottomOf="@+id/details" />
 
-        <TextView
-            android:id="@+id/threePtTextView"
-            style="@style/ratingText" />
-    </androidx.cardview.widget.CardView>
-
-    <androidx.cardview.widget.CardView
+    <com.example.nbarandomizer.ui.components.RatingView
         android:id="@+id/dunkCardView"
         style="@style/ratingCard"
         android:layout_marginHorizontal="10dp"
@@ -101,10 +86,5 @@
         app:layout_constraintBottom_toBottomOf="@+id/threePtCardView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/threePtCardView"
-        app:layout_constraintTop_toTopOf="@+id/threePtCardView">
-
-        <TextView
-            android:id="@+id/dunkTextView"
-            style="@style/ratingText" />
-    </androidx.cardview.widget.CardView>
+        app:layout_constraintTop_toTopOf="@+id/threePtCardView" />
 </androidx.constraintlayout.widget.ConstraintLayout>

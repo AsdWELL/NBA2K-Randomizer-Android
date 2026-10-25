@@ -5,13 +5,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nbarandomizer.databinding.ItemAttributeBinding
 import com.example.nbarandomizer.models.Rating
-import com.example.nbarandomizer.ui.components.RatingView
 
 class SingleAttributeViewHolder(private val binding: ItemAttributeBinding) : RecyclerView.ViewHolder(binding.root) {
-    private val ratingView = RatingView(binding.attributeCard, binding.attributeValue, binding.attributeName)
-
     fun bind(rating: Rating) {
-        ratingView.bind(rating)
+        binding.attributeCard.bind(rating, binding.attributeName)
     }
 }
 

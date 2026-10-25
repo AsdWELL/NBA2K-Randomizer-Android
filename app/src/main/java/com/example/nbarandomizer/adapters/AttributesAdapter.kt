@@ -6,17 +6,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nbarandomizer.databinding.ItemPlayerAttributesBinding
 import com.example.nbarandomizer.models.AttributeRatings
-import com.example.nbarandomizer.ui.components.RatingView
 
 class AttributesViewHolder(private val binding: ItemPlayerAttributesBinding) : RecyclerView.ViewHolder(binding.root) {
-    private val ratingView = RatingView(binding.attributeCard, binding.attributeValue, binding.attributeName)
-
     fun bind(attributeRatings: AttributeRatings) {
         val singleAttributeAdapter = SingleAttributeAdapter()
         singleAttributeAdapter.ratingsCollection = attributeRatings.parameters
 
         with(binding) {
-            ratingView.bind(attributeRatings.rating)
+            attributeCard.bind(attributeRatings.rating, attributeName)
 
             singleAttributeRecyclerView.layoutManager = LinearLayoutManager(itemView.context)
             singleAttributeRecyclerView.adapter = singleAttributeAdapter
