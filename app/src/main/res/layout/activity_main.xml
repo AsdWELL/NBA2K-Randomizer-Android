@@ -126,13 +126,12 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-            <View
+            <com.example.nbarandomizer.ui.components.DropNavigationIndicatorView
                 android:id="@+id/bottom_navigation_indicator"
                 android:alpha="0.75"
                 android:layout_width="@dimen/bottom_navigation_item_size"
                 android:layout_height="@dimen/bottom_navigation_item_size"
                 android:layout_marginTop="4dp"
-                android:background="@drawable/bottom_navigation_indicator"
                 android:importantForAccessibility="no"
                 android:visibility="invisible" />
 
@@ -148,44 +147,48 @@
                 android:id="@+id/tournament_navigation"
                 android:layout_width="@dimen/bottom_navigation_item_size"
                 android:layout_height="@dimen/bottom_navigation_item_size"
-                android:background="@drawable/bottom_navigation_item_background"
+                android:background="@android:color/transparent"
                 android:contentDescription="@string/navigation_tournament"
                 android:padding="12dp"
                 android:tooltipText="@string/navigation_tournament"
                 app:srcCompat="@drawable/emoji_events_24px"
+                android:defaultFocusHighlightEnabled="false"
                 app:tint="@color/bottom_navigation_icon_tint" />
 
             <androidx.appcompat.widget.AppCompatImageButton
                 android:id="@+id/randomizer_navigation"
                 android:layout_width="@dimen/bottom_navigation_item_size"
                 android:layout_height="@dimen/bottom_navigation_item_size"
-                android:background="@drawable/bottom_navigation_item_background"
+                android:background="@android:color/transparent"
                 android:contentDescription="@string/navigation_randomizer"
                 android:padding="12dp"
                 android:tooltipText="@string/navigation_randomizer"
                 app:srcCompat="@drawable/casino_24px"
+                android:defaultFocusHighlightEnabled="false"
                 app:tint="@color/bottom_navigation_icon_tint" />
 
             <androidx.appcompat.widget.AppCompatImageButton
                 android:id="@+id/roster_navigation"
                 android:layout_width="@dimen/bottom_navigation_item_size"
                 android:layout_height="@dimen/bottom_navigation_item_size"
-                android:background="@drawable/bottom_navigation_item_background"
+                android:background="@android:color/transparent"
                 android:contentDescription="@string/navigation_roster"
                 android:padding="12dp"
                 android:tooltipText="@string/navigation_roster"
                 app:srcCompat="@drawable/groups_24px"
+                android:defaultFocusHighlightEnabled="false"
                 app:tint="@color/bottom_navigation_icon_tint" />
 
             <androidx.appcompat.widget.AppCompatImageButton
                 android:id="@+id/settings_navigation"
                 android:layout_width="@dimen/bottom_navigation_item_size"
                 android:layout_height="@dimen/bottom_navigation_item_size"
-                android:background="@drawable/bottom_navigation_item_background"
+                android:background="@android:color/transparent"
                 android:contentDescription="@string/navigation_settings"
                 android:padding="12dp"
                 android:tooltipText="@string/navigation_settings"
                 app:srcCompat="@drawable/settings_24px"
+                android:defaultFocusHighlightEnabled="false"
                 app:tint="@color/bottom_navigation_icon_tint" />
             </LinearLayout>
         </FrameLayout>

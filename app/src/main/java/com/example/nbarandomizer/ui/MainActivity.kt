@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var sharedViewModel: SharedViewModel
+    private var navigationPosition = 0f
 
     private val navigationPageCallback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
@@ -50,8 +51,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onPageScrollStateChanged(state: Int) {
-            if (state == ViewPager2.SCROLL_STATE_IDLE) {
-                updateNavigationIndicator(binding.viewPager.currentItem.toFloat())
+            if (binding.randomizerNavigation.width == 0) return
+            if (state == ViewPager2.SCROLL_STATE_DRAGGING) {
+                binding.bottomNavigationIndicator.beginDrag(navigationIndicatorLeft(navigationPosition))
+            } else {
+                binding.bottomNavigationIndicator.animateTo(
+                    navigationIndicatorLeft(binding.viewPager.currentItem.toFloat())
+                )
+                if (state == ViewPager2.SCROLL_STATE_IDLE) {
+                    updateNavigationIndicator(binding.viewPager.currentItem.toFloat())
+                }
             }
         }
     }
@@ -202,11 +211,15 @@ class MainActivity : AppCompatActivity() {
         binding.bottomNavigationItems.children.forEach {
             it.isEnabled = it === binding.randomizerNavigation || it === binding.rosterNavigation
         }
+        binding.bottomNavigationIndicator.onPositionChanged = ::updateNavigationColors
         binding.randomizerNavigation.setOnClickListener { binding.viewPager.currentItem = 0 }
         binding.rosterNavigation.setOnClickListener { binding.viewPager.currentItem = 1 }
         binding.viewPager.registerOnPageChangeCallback(navigationPageCallback)
         updateNavigation(binding.viewPager.currentItem)
         binding.bottomNavigation.doOnLayout {
+            binding.bottomNavigationIndicator.snapTo(
+                navigationIndicatorLeft(binding.viewPager.currentItem.toFloat())
+            )
             updateNavigationIndicator(binding.viewPager.currentItem.toFloat())
         }
     }
@@ -219,19 +232,39 @@ class MainActivity : AppCompatActivity() {
         } else {
             0f
         }
+        if (binding.randomizerNavigation.width == 0) return
         if (binding.viewPager.scrollState == ViewPager2.SCROLL_STATE_IDLE) {
+            binding.bottomNavigationIndicator.snapTo(navigationIndicatorLeft(position.toFloat()))
             updateNavigationIndicator(position.toFloat())
+        } else if (binding.viewPager.scrollState == ViewPager2.SCROLL_STATE_SETTLING) {
+            binding.bottomNavigationIndicator.animateTo(navigationIndicatorLeft(position.toFloat()))
         }
     }
 
-    private fun updateNavigationIndicator(position: Float) {
-        if (binding.randomizerNavigation.width == 0) return
-
-        val progress = position.coerceIn(0f, 1f)
+    private fun navigationIndicatorLeft(position: Float): Float {
         val start = binding.randomizerNavigation.left
         val end = binding.rosterNavigation.left
-        binding.bottomNavigationIndicator.x = start + (end - start) * progress
-        binding.bottomNavigationIndicator.visibility = View.VISIBLE
+        return start + (end - start) * position.coerceIn(0f, 1f)
+    }
+
+    private fun updateNavigationIndicator(position: Float) {
+        navigationPosition = position.coerceIn(0f, 1f)
+        if (binding.randomizerNavigation.width == 0) return
+
+        val progress = navigationPosition
+        if (binding.viewPager.scrollState == ViewPager2.SCROLL_STATE_DRAGGING) {
+            binding.bottomNavigationIndicator.followDrag(
+                navigationIndicatorLeft(progress),
+                binding.randomizerNavigation.left.toFloat(),
+                binding.rosterNavigation.left.toFloat()
+            )
+        }
+    }
+
+    private fun updateNavigationColors(left: Float) {
+        val start = binding.randomizerNavigation.left
+        val end = binding.rosterNavigation.left
+        val progress = if (start == end) 0f else ((left - start) / (end - start)).coerceIn(0f, 1f)
         binding.randomizerNavigation.imageTintList = ColorStateList.valueOf(
             ColorUtils.blendARGB(navigationActiveColor, navigationInactiveColor, progress)
         )
@@ -327,6 +360,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        binding.bottomNavigationIndicator.onPositionChanged = null
         binding.viewPager.unregisterOnPageChangeCallback(navigationPageCallback)
         downloadingAnimator.cancel()
         if (!isChangingConfigurations) playersService.notifyProgressBar = null
