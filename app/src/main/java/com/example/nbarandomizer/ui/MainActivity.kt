@@ -1,6 +1,7 @@
 package com.example.nbarandomizer.ui
 
 import android.animation.ObjectAnimator
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
 import android.view.animation.LinearInterpolator
@@ -8,9 +9,15 @@ import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.children
+import androidx.core.view.doOnLayout
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.ViewModelProvider
+import androidx.viewpager2.widget.ViewPager2
 import com.example.nbarandomizer.App
 import com.example.nbarandomizer.R
 import com.example.nbarandomizer.adapters.MainViewPagerAdapter
@@ -24,7 +31,7 @@ import com.example.nbarandomizer.ui.search.SearchFragment
 import com.example.nbarandomizer.viewModels.SharedViewModel
 import com.example.nbarandomizer.viewModels.RandomizerViewModel
 import com.example.nbarandomizer.viewModels.UiState
-import com.google.android.material.tabs.TabLayoutMediator
+import com.google.android.material.color.MaterialColors
 import java.io.File
 import java.io.FileOutputStream
 
@@ -32,6 +39,30 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var sharedViewModel: SharedViewModel
+
+    private val navigationPageCallback = object : ViewPager2.OnPageChangeCallback() {
+        override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+            updateNavigationIndicator(position + positionOffset)
+        }
+
+        override fun onPageSelected(position: Int) {
+            updateNavigation(position)
+        }
+
+        override fun onPageScrollStateChanged(state: Int) {
+            if (state == ViewPager2.SCROLL_STATE_IDLE) {
+                updateNavigationIndicator(binding.viewPager.currentItem.toFloat())
+            }
+        }
+    }
+
+    private val navigationActiveColor by lazy {
+        MaterialColors.getColor(binding.bottomNavigation, com.google.android.material.R.attr.colorPrimary)
+    }
+
+    private val navigationInactiveColor by lazy {
+        MaterialColors.getColor(binding.bottomNavigation, com.google.android.material.R.attr.colorOnSurfaceVariant)
+    }
 
     private val playersService: PlayersService
         get() = (applicationContext as App).playersService
@@ -53,6 +84,9 @@ class MainActivity : AppCompatActivity() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
+            binding.bottomNavigation.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                bottomMargin = resources.getDimensionPixelSize(R.dimen.bottom_navigation_bottom_margin) + systemBars.bottom
+            }
             insets
         }
 
@@ -165,12 +199,51 @@ class MainActivity : AppCompatActivity() {
             adapter = MainViewPagerAdapter(this@MainActivity)
         }
 
-        TabLayoutMediator(binding.tabs, binding.viewPager) { tab, position ->
-            when(position) {
-                0 -> tab.text = "Randomizer"
-                1 -> tab.text = "Roster"
-            }
-        }.attach()
+        binding.bottomNavigationItems.children.forEach {
+            it.isEnabled = it === binding.randomizerNavigation || it === binding.rosterNavigation
+        }
+        binding.randomizerNavigation.setOnClickListener { binding.viewPager.currentItem = 0 }
+        binding.rosterNavigation.setOnClickListener { binding.viewPager.currentItem = 1 }
+        binding.viewPager.registerOnPageChangeCallback(navigationPageCallback)
+        updateNavigation(binding.viewPager.currentItem)
+        binding.bottomNavigation.doOnLayout {
+            updateNavigationIndicator(binding.viewPager.currentItem.toFloat())
+        }
+    }
+
+    private fun updateNavigation(position: Int) {
+        binding.randomizerNavigation.isSelected = position == 0
+        binding.rosterNavigation.isSelected = position == 1
+        binding.bottomNavigation.translationY = if (position == 1) {
+            findViewById<View>(R.id.filter_button)?.translationY ?: 0f
+        } else {
+            0f
+        }
+        if (binding.viewPager.scrollState == ViewPager2.SCROLL_STATE_IDLE) {
+            updateNavigationIndicator(position.toFloat())
+        }
+    }
+
+    private fun updateNavigationIndicator(position: Float) {
+        if (binding.randomizerNavigation.width == 0) return
+
+        val progress = position.coerceIn(0f, 1f)
+        val start = binding.randomizerNavigation.left
+        val end = binding.rosterNavigation.left
+        binding.bottomNavigationIndicator.x = start + (end - start) * progress
+        binding.bottomNavigationIndicator.visibility = View.VISIBLE
+        binding.randomizerNavigation.imageTintList = ColorStateList.valueOf(
+            ColorUtils.blendARGB(navigationActiveColor, navigationInactiveColor, progress)
+        )
+        binding.rosterNavigation.imageTintList = ColorStateList.valueOf(
+            ColorUtils.blendARGB(navigationInactiveColor, navigationActiveColor, progress)
+        )
+    }
+
+    fun syncBottomNavigationWithFilter(translationY: Float) {
+        if (binding.viewPager.currentItem == 1) {
+            binding.bottomNavigation.translationY = translationY
+        }
     }
 
     private fun createDownloadingAnimation(): ObjectAnimator {
@@ -254,6 +327,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        binding.viewPager.unregisterOnPageChangeCallback(navigationPageCallback)
         downloadingAnimator.cancel()
         if (!isChangingConfigurations) playersService.notifyProgressBar = null
 

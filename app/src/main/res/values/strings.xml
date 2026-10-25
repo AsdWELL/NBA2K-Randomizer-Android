@@ -23,4 +23,8 @@
     <string name="games_count_label">Сыграно матчей</string>
     <string name="empty_history_msg">Нихуя пока тут нет</string>
     <string name="filter_label">Фильтры</string>
+    <string name="navigation_tournament">Турнирный режим</string>
+    <string name="navigation_randomizer">Randomizer</string>
+    <string name="navigation_roster">Roster</string>
+    <string name="navigation_settings">Настройки</string>
 </resources>

@@ -13,10 +13,12 @@ import com.example.nbarandomizer.R
 import com.example.nbarandomizer.adapters.PlayerRowAdapter
 import com.example.nbarandomizer.databinding.FragmentRosterBinding
 import com.example.nbarandomizer.extensions.applyFilterSettingsAndSort
+import com.example.nbarandomizer.extensions.avoidBottomNavigationOverlap
 import com.example.nbarandomizer.listeners.IPlayerDetailsListener
 import com.example.nbarandomizer.models.IPlayerBase
 import com.example.nbarandomizer.models.Player
 import com.example.nbarandomizer.models.FilterSettings
+import com.example.nbarandomizer.ui.MainActivity
 import com.example.nbarandomizer.ui.playerDetails.PlayerDetailsFragment
 import com.example.nbarandomizer.viewModels.SharedViewModel
 
@@ -88,6 +90,12 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.root.avoidBottomNavigationOverlap(binding.filterButton)
+        val filterButton = binding.filterButton
+        // Follow the existing behavior's animation instead of running a second animator.
+        filterButton.animate().setUpdateListener {
+            (activity as? MainActivity)?.syncBottomNavigationWithFilter(filterButton.translationY)
+        }
         adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         bindRoster()
     }
@@ -116,6 +124,7 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
     }
 
     override fun onDestroyView() {
+        binding.filterButton.animate().setUpdateListener(null)
         binding.recyclerView.adapter = null
         lastFilterSettings = null
         super.onDestroyView()

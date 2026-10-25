@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.nbarandomizer.R
 import com.example.nbarandomizer.databinding.FragmentRandomizerBinding
+import com.example.nbarandomizer.extensions.avoidBottomNavigationOverlap
 import com.example.nbarandomizer.models.Position
 import com.example.nbarandomizer.viewModels.RandomizerViewModel
 import com.example.nbarandomizer.viewModels.SharedViewModel
@@ -32,6 +33,7 @@ class RandomizerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         postponeEnterTransition()
+        binding.root.avoidBottomNavigationOverlap(binding.randomizeButton)
 
         binding.playersCountSeekBar.progress = randomizerViewModel.playersCount - 1
         binding.playersCountTextView.text = "Игроков: ${randomizerViewModel.playersCount}"
