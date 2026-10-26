@@ -208,6 +208,7 @@ class MainActivity : AppCompatActivity() {
             adapter = MainViewPagerAdapter(this@MainActivity)
         }
 
+        binding.bottomNavigation.setBlurSource(binding.viewPager)
         binding.bottomNavigationItems.children.forEach {
             it.isEnabled = it === binding.randomizerNavigation || it === binding.rosterNavigation
         }

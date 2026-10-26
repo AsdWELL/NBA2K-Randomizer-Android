@@ -115,7 +115,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <FrameLayout
+        <com.example.nbarandomizer.ui.components.BlurredNavigationLayout
             android:id="@+id/bottom_navigation"
             android:layout_width="@dimen/bottom_navigation_width"
             android:layout_height="@dimen/bottom_navigation_height"
@@ -191,6 +191,6 @@
                 android:defaultFocusHighlightEnabled="false"
                 app:tint="@color/bottom_navigation_icon_tint" />
             </LinearLayout>
-        </FrameLayout>
+        </com.example.nbarandomizer.ui.components.BlurredNavigationLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>
