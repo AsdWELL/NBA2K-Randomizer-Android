@@ -34,6 +34,7 @@ class RandomizerFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         postponeEnterTransition()
         binding.root.avoidBottomNavigationOverlap(binding.randomizeButton)
+        binding.randomizeButton.setBlurSource(binding.root)
 
         binding.playersCountSeekBar.progress = randomizerViewModel.playersCount - 1
         binding.playersCountTextView.text = "Игроков: ${randomizerViewModel.playersCount}"

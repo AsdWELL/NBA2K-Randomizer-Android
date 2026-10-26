@@ -2,20 +2,21 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/main"
+    android:clipChildren="false"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.randomizer.RandomizerFragment">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.example.nbarandomizer.ui.components.GlassFloatingActionButton
         android:id="@+id/randomizeButton"
         android:transitionName="my_transition"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
         android:layout_marginEnd="10dp"
-        android:tint="@color/white"
+        app:tint="?attr/colorPrimary"
         android:src="@drawable/randomize_icon"
         app:maxImageSize="30dp"
         app:layout_constraintBottom_toBottomOf="parent"

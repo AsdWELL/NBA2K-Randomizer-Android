@@ -91,6 +91,7 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.root.avoidBottomNavigationOverlap(binding.filterButton)
+        binding.filterButton.setBlurSource(binding.root)
         val filterButton = binding.filterButton
         // Follow the existing behavior's animation instead of running a second animator.
         filterButton.animate().setUpdateListener {
