@@ -8,6 +8,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/blur_container"
+        android:clipChildren="false"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -121,6 +122,7 @@
             android:layout_height="@dimen/bottom_navigation_height"
             android:layout_marginBottom="@dimen/bottom_navigation_bottom_margin"
             android:background="@drawable/bottom_navigation_background"
+            android:clipChildren="false"
             android:elevation="6dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -128,7 +130,6 @@
 
             <com.example.nbarandomizer.ui.components.DropNavigationIndicatorView
                 android:id="@+id/bottom_navigation_indicator"
-                android:alpha="0.75"
                 android:layout_width="@dimen/bottom_navigation_item_size"
                 android:layout_height="@dimen/bottom_navigation_item_size"
                 android:layout_marginTop="4dp"

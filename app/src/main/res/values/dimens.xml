@@ -6,6 +6,7 @@
     <dimen name="bottom_navigation_height">56dp</dimen>
     <dimen name="bottom_navigation_blur_radius">16dp</dimen>
     <dimen name="bottom_navigation_item_size">48dp</dimen>
+    <dimen name="bottom_navigation_icon_glow_radius">4dp</dimen>
     <dimen name="bottom_navigation_bottom_margin">20dp</dimen>
     <dimen name="bottom_navigation_action_gap">8dp</dimen>
 </resources>

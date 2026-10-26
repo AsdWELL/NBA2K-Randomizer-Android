@@ -2,6 +2,7 @@ package com.example.nbarandomizer.ui
 
 import android.animation.ObjectAnimator
 import android.content.res.ColorStateList
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.View
 import android.view.animation.LinearInterpolator
@@ -22,6 +23,7 @@ import com.example.nbarandomizer.App
 import com.example.nbarandomizer.R
 import com.example.nbarandomizer.adapters.MainViewPagerAdapter
 import com.example.nbarandomizer.databinding.ActivityMainBinding
+import com.example.nbarandomizer.extensions.addNavigationIconGlow
 import com.example.nbarandomizer.extensions.gone
 import com.example.nbarandomizer.extensions.show
 import com.example.nbarandomizer.models.Epoch
@@ -40,6 +42,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var sharedViewModel: SharedViewModel
     private var navigationPosition = 0f
+    private lateinit var randomizerGlow: Drawable
+    private lateinit var rosterGlow: Drawable
 
     private val navigationPageCallback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
@@ -212,6 +216,8 @@ class MainActivity : AppCompatActivity() {
         binding.bottomNavigationItems.children.forEach {
             it.isEnabled = it === binding.randomizerNavigation || it === binding.rosterNavigation
         }
+        randomizerGlow = binding.randomizerNavigation.addNavigationIconGlow()
+        rosterGlow = binding.rosterNavigation.addNavigationIconGlow()
         binding.bottomNavigationIndicator.onPositionChanged = ::updateNavigationColors
         binding.randomizerNavigation.setOnClickListener { binding.viewPager.currentItem = 0 }
         binding.rosterNavigation.setOnClickListener { binding.viewPager.currentItem = 1 }
@@ -262,6 +268,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun calculateGlowAlpha(progress: Float): Int {
+        return (180 * (1f - progress)).toInt()
+    }
+
     private fun updateNavigationColors(left: Float) {
         val start = binding.randomizerNavigation.left
         val end = binding.rosterNavigation.left
@@ -272,6 +282,8 @@ class MainActivity : AppCompatActivity() {
         binding.rosterNavigation.imageTintList = ColorStateList.valueOf(
             ColorUtils.blendARGB(navigationInactiveColor, navigationActiveColor, progress)
         )
+        randomizerGlow.alpha = calculateGlowAlpha(progress)
+        rosterGlow.alpha = calculateGlowAlpha(1f - progress)
     }
 
     fun syncBottomNavigationWithFilter(translationY: Float) {

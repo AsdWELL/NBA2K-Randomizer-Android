@@ -10,6 +10,8 @@ import android.graphics.Path
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.LinearInterpolator
+import androidx.core.graphics.ColorUtils
+import com.example.nbarandomizer.R
 import com.google.android.material.color.MaterialColors
 import kotlin.math.PI
 import kotlin.math.abs
@@ -30,9 +32,21 @@ class DropNavigationIndicatorView @JvmOverloads constructor(
         val direction: Float
     )
 
+    private val highlightOpacity = 0.75f
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = MaterialColors.getColor(this@DropNavigationIndicatorView,
             com.google.android.material.R.attr.colorSecondaryContainer)
+        // Paint opacity avoids a View alpha layer that would crop the outer glow.
+        alpha = (255 * highlightOpacity).toInt()
+    }
+    private val glowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        val accent = MaterialColors.getColor(this@DropNavigationIndicatorView,
+            com.google.android.material.R.attr.colorPrimary)
+        style = Paint.Style.STROKE
+        strokeWidth = resources.displayMetrics.density
+        color = ColorUtils.setAlphaComponent(accent, (110 * highlightOpacity).toInt())
+        setShadowLayer(resources.getDimension(R.dimen.bottom_navigation_icon_glow_radius),
+            0f, 0f, ColorUtils.setAlphaComponent(accent, (180 * highlightOpacity).toInt()))
     }
     private val path = Path()
     private var animator: ValueAnimator? = null
@@ -162,6 +176,7 @@ class DropNavigationIndicatorView @JvmOverloads constructor(
         path.cubicTo(rx - k * rx, height.toFloat(), 0f, ry + k * left, 0f, ry)
         path.close()
         canvas.drawPath(path, paint)
+        canvas.drawPath(path, glowPaint)
     }
 
     override fun onDetachedFromWindow() {

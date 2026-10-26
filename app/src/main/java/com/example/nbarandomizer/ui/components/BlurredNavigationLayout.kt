@@ -2,6 +2,7 @@ package com.example.nbarandomizer.ui.components
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Path
 import android.graphics.Rect
 import android.graphics.RenderEffect
 import android.graphics.RenderNode
@@ -25,15 +26,12 @@ class BlurredNavigationLayout @JvmOverloads constructor(
     private var renderer: BlurRenderer? = null
     private var observedTree: ViewTreeObserver? = null
     private val visibleBounds = Rect()
+    private val backdropClip = Path()
     private val sourceLocation = IntArray(2)
     private val navigationLocation = IntArray(2)
     private val preDrawListener = ViewTreeObserver.OnPreDrawListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) updateBackdrop()
         true
-    }
-
-    init {
-        clipToOutline = true
     }
 
     // The source excludes the navigation itself to avoid capturing it recursively.
@@ -62,9 +60,20 @@ class BlurredNavigationLayout @JvmOverloads constructor(
         )
     }
 
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        backdropClip.rewind()
+        backdropClip.addRoundRect(0f, 0f, w.toFloat(), h.toFloat(), h / 2f, h / 2f,
+            Path.Direction.CW)
+    }
+
     override fun draw(canvas: Canvas) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && canvas.isHardwareAccelerated) {
+            val saveCount = canvas.save()
+            // Clip only the backdrop; child glows may extend outside the capsule.
+            canvas.clipPath(backdropClip)
             renderer?.draw(canvas)
+            canvas.restoreToCount(saveCount)
         }
         // Keep the translucent background, indicator and icons above the blurred content.
         super.draw(canvas)
