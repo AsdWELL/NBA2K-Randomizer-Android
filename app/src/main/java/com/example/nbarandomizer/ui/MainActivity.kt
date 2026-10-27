@@ -234,11 +234,6 @@ class MainActivity : AppCompatActivity() {
     private fun updateNavigation(position: Int) {
         binding.randomizerNavigation.isSelected = position == 0
         binding.rosterNavigation.isSelected = position == 1
-        binding.bottomNavigation.translationY = if (position == 1) {
-            findViewById<View>(R.id.filter_button)?.translationY ?: 0f
-        } else {
-            0f
-        }
         if (binding.randomizerNavigation.width == 0) return
         if (binding.viewPager.scrollState == ViewPager2.SCROLL_STATE_IDLE) {
             binding.bottomNavigationIndicator.snapTo(navigationIndicatorLeft(position.toFloat()))
@@ -284,12 +279,6 @@ class MainActivity : AppCompatActivity() {
         )
         randomizerGlow.alpha = calculateGlowAlpha(progress)
         rosterGlow.alpha = calculateGlowAlpha(1f - progress)
-    }
-
-    fun syncBottomNavigationWithFilter(translationY: Float) {
-        if (binding.viewPager.currentItem == 1) {
-            binding.bottomNavigation.translationY = translationY
-        }
     }
 
     private fun createDownloadingAnimation(): ObjectAnimator {

@@ -1,11 +1,15 @@
 package com.example.nbarandomizer.ui.roster
 
 import android.os.Bundle
+import android.util.DisplayMetrics
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -92,11 +96,16 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
         super.onViewCreated(view, savedInstanceState)
         binding.root.avoidBottomNavigationOverlap(binding.filterButton)
         binding.filterButton.setBlurSource(binding.root)
-        val filterButton = binding.filterButton
-        // Follow the existing behavior's animation instead of running a second animator.
-        filterButton.animate().setUpdateListener {
-            (activity as? MainActivity)?.syncBottomNavigationWithFilter(filterButton.translationY)
+        val navigationPadding = resources.getDimensionPixelSize(R.dimen.bottom_navigation_height) +
+            resources.getDimensionPixelSize(R.dimen.bottom_navigation_bottom_margin) +
+            resources.getDimensionPixelSize(R.dimen.bottom_navigation_action_gap)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.recyclerView) { recyclerView, insets ->
+            recyclerView.updatePadding(
+                bottom = navigationPadding + insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+            )
+            insets
         }
+        ViewCompat.requestApplyInsets(binding.recyclerView)
         adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         bindRoster()
     }

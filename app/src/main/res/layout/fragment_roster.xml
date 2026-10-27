@@ -10,6 +10,7 @@
     tools:context=".ui.roster.RosterFragment">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/roster_app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:liftOnScroll="false">
@@ -28,6 +29,7 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
+        android:clipToPadding="false"
         android:nestedScrollingEnabled="true"
         style="@android:style/Widget.Material.ScrollView"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
@@ -41,7 +43,8 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="20dp"
-        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
+        app:layout_behavior="com.google.android.material.floatingactionbutton.FloatingActionButton$Behavior"
+        app:behavior_autoHide="false"
         android:src="@drawable/filter_list_24px"
         app:tint="?attr/colorPrimary"
         app:maxImageSize="30dp"
