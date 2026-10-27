@@ -1,0 +1,5 @@
+<resources>
+    <declare-styleable name="GlassFloatingActionButton">
+        <attr name="glowEnabled" format="boolean" />
+    </declare-styleable>
+</resources>

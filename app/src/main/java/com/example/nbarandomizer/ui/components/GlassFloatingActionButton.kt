@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.content.withStyledAttributes
 import androidx.core.graphics.ColorUtils
 import com.example.nbarandomizer.R
 import com.example.nbarandomizer.extensions.addNavigationIconGlow
@@ -24,6 +25,7 @@ class GlassFloatingActionButton @JvmOverloads constructor(
 ) : FloatingActionButton(context, attrs, defStyleAttr) {
     private val backdrop = BackdropBlurController(this)
     private val circle = Path()
+    private var glowEnabled = true
     private var iconGlow: Drawable? = null
     private val pressedGlow = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         val accent = MaterialColors.getColor(this@GlassFloatingActionButton,
@@ -36,11 +38,14 @@ class GlassFloatingActionButton @JvmOverloads constructor(
     }
 
     init {
+        context.withStyledAttributes(attrs, R.styleable.GlassFloatingActionButton, defStyleAttr) {
+            glowEnabled = getBoolean(R.styleable.GlassFloatingActionButton_glowEnabled, true)
+        }
         shapeAppearanceModel = shapeAppearanceModel.toBuilder()
             .setAllCornerSizes(RelativeCornerSize(0.5f)).build()
         backgroundTintList = AppCompatResources.getColorStateList(context, R.color.bottom_navigation_background_tint)
         setRippleColor(Color.TRANSPARENT)
-        if (drawable != null) iconGlow = addNavigationIconGlow()
+        if (glowEnabled && drawable != null) iconGlow = addNavigationIconGlow()
     }
 
     fun setBlurSource(source: View) = backdrop.setSource(source, excludeHost = true)
@@ -63,6 +68,6 @@ class GlassFloatingActionButton @JvmOverloads constructor(
         backdrop.draw(canvas)
         canvas.restoreToCount(saveCount)
         super.draw(canvas)
-        if (isPressed && isEnabled) canvas.drawPath(circle, pressedGlow)
+        if (glowEnabled && isPressed && isEnabled) canvas.drawPath(circle, pressedGlow)
     }
 }
