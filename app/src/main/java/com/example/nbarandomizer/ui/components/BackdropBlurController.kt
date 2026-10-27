@@ -65,8 +65,10 @@ internal class BackdropBlurController(private val host: View) :
     @RequiresApi(Build.VERSION_CODES.S)
     private fun updateBackdrop() {
         val source = source ?: return
-        if (!host.isHardwareAccelerated || !host.isShown || !source.isShown ||
-            host.width == 0 || host.height == 0 || !host.getGlobalVisibleRect(visibleBounds)) return
+        // Container transforms draw hidden controls in an overlay. Keep their backdrop ready
+        // while the source is on screen, rather than waiting for the control to become visible.
+        if (!host.isHardwareAccelerated || !source.isShown ||
+            host.width == 0 || host.height == 0 || !source.getGlobalVisibleRect(visibleBounds)) return
         source.getLocationInWindow(sourceLocation)
         host.getLocationInWindow(hostLocation)
         // Update the referenced node in this frame without scheduling another redraw.

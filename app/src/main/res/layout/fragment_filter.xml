@@ -152,28 +152,27 @@
                 android:layout_height="wrap_content">
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/resetBtn"
+                    style="@style/Widget.NBARandomizer.OutlinedActionButton"
                     android:layout_gravity="center"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:text="@string/resetBtnText"
-                    android:stateListAnimator="@animator/button_animation"
-                    android:textSize="20sp"
-                    android:textStyle="italic"
                     android:layout_marginTop="15dp"
+                    app:icon="@drawable/reset_session_24px"
                     app:layout_constraintStart_toStartOf="@id/saveFiltersBtn"
                     app:layout_constraintEnd_toEndOf="@id/saveFiltersBtn"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/saveFiltersBtn"
+                    style="@style/Widget.NBARandomizer.OutlinedActionButton"
                     android:layout_gravity="center"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/saveFiltersBtnText"
-                    android:stateListAnimator="@animator/button_animation"
-                    android:textSize="20sp"
-                    android:textStyle="italic"
-                    android:layout_marginTop="5dp"
+                    android:layout_marginTop="15dp"
+                    app:icon="@drawable/check_circle_24px"
+                    app:layout_constrainedWidth="true"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/resetBtn" />
