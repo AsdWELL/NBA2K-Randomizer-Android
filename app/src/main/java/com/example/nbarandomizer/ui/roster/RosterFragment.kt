@@ -12,6 +12,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nbarandomizer.R
 import com.example.nbarandomizer.adapters.PlayerRowAdapter
@@ -22,7 +23,6 @@ import com.example.nbarandomizer.listeners.IPlayerDetailsListener
 import com.example.nbarandomizer.models.IPlayerBase
 import com.example.nbarandomizer.models.Player
 import com.example.nbarandomizer.models.FilterSettings
-import com.example.nbarandomizer.ui.MainActivity
 import com.example.nbarandomizer.ui.playerDetails.PlayerDetailsFragment
 import com.example.nbarandomizer.viewModels.SharedViewModel
 
@@ -110,6 +110,18 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
         bindRoster()
     }
 
+    fun scrollToTop() {
+        val currentBinding = _binding ?: return
+        val scroller = object : LinearSmoothScroller(currentBinding.recyclerView.context) {
+            override fun calculateSpeedPerPixel(displayMetrics: DisplayMetrics): Float =
+                super.calculateSpeedPerPixel(displayMetrics) / 3f
+
+            override fun getVerticalSnapPreference(): Int = SNAP_TO_START
+        }.apply { targetPosition = 0 }
+        currentBinding.recyclerView.layoutManager?.startSmoothScroll(scroller)
+        currentBinding.rosterAppBar.setExpanded(true, true)
+    }
+
     private fun showPlayersCount(count: Int) {
         binding.playersCountTextView.text = "Показано $count из 100 игроков"
     }
@@ -134,7 +146,6 @@ class RosterFragment : Fragment(), IPlayerDetailsListener {
     }
 
     override fun onDestroyView() {
-        binding.filterButton.animate().setUpdateListener(null)
         binding.recyclerView.adapter = null
         lastFilterSettings = null
         super.onDestroyView()

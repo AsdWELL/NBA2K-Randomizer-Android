@@ -29,6 +29,7 @@ import com.example.nbarandomizer.extensions.show
 import com.example.nbarandomizer.models.Epoch
 import com.example.nbarandomizer.models.Version2K
 import com.example.nbarandomizer.services.PlayersService
+import com.example.nbarandomizer.ui.roster.RosterFragment
 import com.example.nbarandomizer.ui.search.SearchFragment
 import com.example.nbarandomizer.viewModels.SharedViewModel
 import com.example.nbarandomizer.viewModels.RandomizerViewModel
@@ -220,7 +221,14 @@ class MainActivity : AppCompatActivity() {
         rosterGlow = binding.rosterNavigation.addNavigationIconGlow()
         binding.bottomNavigationIndicator.onPositionChanged = ::updateNavigationColors
         binding.randomizerNavigation.setOnClickListener { binding.viewPager.currentItem = 0 }
-        binding.rosterNavigation.setOnClickListener { binding.viewPager.currentItem = 1 }
+        binding.rosterNavigation.setOnClickListener {
+            if (binding.viewPager.currentItem == 1) {
+                supportFragmentManager.fragments.filterIsInstance<RosterFragment>()
+                    .firstOrNull()?.scrollToTop()
+            } else {
+                binding.viewPager.currentItem = 1
+            }
+        }
         binding.viewPager.registerOnPageChangeCallback(navigationPageCallback)
         updateNavigation(binding.viewPager.currentItem)
         binding.bottomNavigation.doOnLayout {
